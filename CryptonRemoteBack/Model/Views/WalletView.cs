@@ -1,4 +1,5 @@
 ﻿using CryptonRemoteBack.Domain;
+using CryptonRemoteBack.Infrastructure.Migrations;
 
 namespace CryptonRemoteBack.Model.Views
 {
@@ -10,13 +11,14 @@ namespace CryptonRemoteBack.Model.Views
         public UserView User { get; set; } = null!;
         public CurrencyView Currency { get; set; } = null!;
 
-        public WalletView(Wallet wallet)
+        public WalletView(Wallet? input)
         {
-            Id = wallet.Id;
-            Name = wallet.Name;
-            Address = wallet.Address;
-            User = new UserView(wallet.User);
-            Currency = new CurrencyView(wallet.Currency);
+            if (input == null) return;
+            Id = input.Id;
+            Name = input.Name;
+            Address = input.Address;
+            User = new UserView(input.User);
+            Currency = new CurrencyView(input.Currency);
         }
     }
 }

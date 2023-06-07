@@ -70,7 +70,7 @@ namespace CryptonRemoteBack.Controllers
 
             db.Wallets.Remove(wallet);
             await db.SaveChangesAsync(ct);
-            return Ok($"Wallet {wallet.Id} was deleted");
+            return Ok($"Wallet {walletId} was deleted");
         }
 
         
