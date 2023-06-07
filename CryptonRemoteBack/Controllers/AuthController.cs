@@ -4,14 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using CryptonRemoteBack.Domain;
 using CryptonRemoteBack.Extensions;
-using CryptonRemoteBack.Infrastructure;
 using CryptonRemoteBack.Model.Models;
 using CryptonRemoteBack.Model.Views;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 
 namespace CryptonRemoteBack.Controllers
 {
@@ -86,16 +84,20 @@ namespace CryptonRemoteBack.Controllers
 
 
         [HttpPost("/register")]
-        public async Task<IActionResult> Register([FromBody] RegisterModel registerModel, [FromServices] CryptonRemoteBackDbContext db, CancellationToken ct)
+        public async Task<IActionResult> Register(
+            [FromBody] RegisterModel registerModel,
+            CancellationToken ct)
         {
             if (await _userManager.FindByEmailAsync(registerModel.Email ?? "") != null)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "User already exists");
             }
-            if(string.IsNullOrWhiteSpace(registerModel.Password))
+
+            if (string.IsNullOrWhiteSpace(registerModel.Password))
             {
-                return BadRequest();
+                return BadRequest("Password is empty");
             }
+
             ApplicationUser user = new()
             {
                 Email = registerModel.Email,
@@ -107,7 +109,7 @@ namespace CryptonRemoteBack.Controllers
             if (!result.Succeeded)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError,
-                                  string.Join(";\n", result.Errors.Select(x=>x.Description)));
+                                  string.Join(";\n", result.Errors.Select(x => x.Description)));
             }
 
 
@@ -120,7 +122,7 @@ namespace CryptonRemoteBack.Controllers
             _ = await _userManager.AddToRoleAsync(user, role);
 
             Console.WriteLine($"User {registerModel.Email} was created");
-            return Ok("Succes");
+            return Ok("Success");
         }
 
         [HttpPost("/refresh-token")]
@@ -181,68 +183,91 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        //[HttpPost("/changepassword")]
-        //[Authorize]
-        //public async Task<IActionResult> ChangePassword(ChangeUserPasswordModel model,
-        //                                                CancellationToken ct)
-        //{
-        //    ApplicationUser? user = await _userManager.FindByIdAsync(model.UserId);
-        //    if (user != null)
-        //    {
-        //        IdentityResult result = await _userManager
-        //            .ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-        //        if (result.Succeeded)
-        //        {
-        //            return Ok("Password changed");
-        //        }
-        //        else
-        //        {
-        //            string err = "";
-        //            foreach (IdentityError? error in result.Errors)
-        //            {
-        //                err += error.Description + "\n";
-        //            }
-        //            return BadRequest(err);
-        //        }
-        //    }
-
-        //    return BadRequest($"User {model.UserId} not found in database");
-        //}
+        [HttpPost("/changepassword")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangeUserPasswordModel model,
+                                                        CancellationToken ct)
+        {
+            ApplicationUser? user = await _userManager.FindByIdAsync(model.UserId ?? "");
+            if (user != null)
+            {
+                if (string.IsNullOrWhiteSpace(model.NewPassword))
+                {
+                    return BadRequest("New password is empty.");
+                }
 
 
-        //[HttpPost("/changeemail")]
-        //[Authorize]
-        //public async Task<IActionResult> ChangeEmail(ChangeUserEmailModel model,
-        //                                             CancellationToken ct)
-        //{
-        //    ApplicationUser? user = await _userManager.FindByIdAsync(model.UserId);
-        //    if (user != null)
-        //    {
-        //        if (!await _userManager.CheckPasswordAsync(user, model.Password ?? ""))
-        //        {
-        //            return BadRequest("Wrong password");
-        //        }
+                IdentityResult result = await _userManager
+                    .ChangePasswordAsync(user, model.OldPassword ?? "", model.NewPassword);
+                if (result.Succeeded)
+                {
+                    return Ok("Password changed");
+                }
+                else
+                {
+                    string err = "";
+                    foreach (IdentityError? error in result.Errors)
+                    {
+                        err += error.Description + "\n";
+                    }
+                    return BadRequest(err);
+                }
+            }
 
-        //        IdentityResult result = await _userManager
-        //            .SetEmailAsync(user, model.NewEmail);
+            return BadRequest($"User {model.UserId} not found in database");
+        }
 
-        //        if (result.Succeeded)
-        //        {
-        //            return Ok("Email changed");
-        //        }
-        //        else
-        //        {
-        //            string err = "";
-        //            foreach (IdentityError? error in result.Errors)
-        //            {
-        //                err += error.Description + "\n";
-        //            }
-        //            return BadRequest(err);
-        //        }
-        //    }
 
-        //    return BadRequest($"User {model.UserId} not found in database");
-        //}
+        [HttpPost("/changeemail")]
+        [Authorize]
+        public async Task<IActionResult> ChangeEmail(ChangeUserContactsModel model,
+                                                     CancellationToken ct)
+        {
+            ApplicationUser? user = await _userManager.FindByIdAsync(model.UserId ?? "");
+            if (user != null)
+            {
+                if (!await _userManager.CheckPasswordAsync(user, model.Password ?? ""))
+                {
+                    return BadRequest("Wrong password");
+                }
+
+                if (!string.IsNullOrWhiteSpace(model.Email))
+                {
+                    IdentityResult result = await _userManager
+                        .SetEmailAsync(user, model.Email);
+
+                    if (!result.Succeeded)
+                    {
+                        string err = "";
+                        foreach (IdentityError? error in result.Errors)
+                        {
+                            err += error.Description + "\n";
+                        }
+                        return BadRequest(err);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(model.PhoneNumber))
+                {
+                    IdentityResult result = await _userManager
+                        .SetPhoneNumberAsync(user, model.PhoneNumber);
+
+                    if (!result.Succeeded)
+                    {
+                        string err = "";
+                        foreach (IdentityError? error in result.Errors)
+                        {
+                            err += error.Description + "\n";
+                        }
+                        return BadRequest(err);
+                    }
+                }
+
+                return Ok("Contacts changed successfully");
+            }
+
+            return BadRequest($"User {model.UserId} not found in database");
+        }
 
 
         [HttpGet("/getuserinfo")]

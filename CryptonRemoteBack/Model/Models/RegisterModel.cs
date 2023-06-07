@@ -9,7 +9,7 @@ namespace CryptonRemoteBack.Model.Models
         [Required(ErrorMessage = "Email is required")]
         public string? Email { get; set; }
         public string? Phone { get; set; }
-        [Required(ErrorMessage = "User Name is required")]
+        [Required(ErrorMessage = "Password is required")]
         public string? Password { get; set; }
     }
 }
