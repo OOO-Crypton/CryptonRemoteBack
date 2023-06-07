@@ -10,6 +10,8 @@ namespace CryptonRemoteBack.Model.Views
         public string? PhoneNumber { get; set; }
         public UserView(ApplicationUser input)
         {
+            if (input == null) return;
+
             Id = Guid.Parse(input.Id);
             UserName = input.UserName;
             Email = input.Email;
