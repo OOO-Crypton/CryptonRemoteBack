@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -13,6 +12,6 @@ namespace CryptonRemoteBack.Domain
         public string LocalSystemAddress { get; set; } = string.Empty;
         public string LocalSystemID { get; set; } = string.Empty;
         public ApplicationUser User { get; set; } = null!;
-        public List<FlightSheet> FlightSheets { get; set; } = new();
+        public FlightSheet? ActiveFlightSheet { get; set; }
     }
 }
