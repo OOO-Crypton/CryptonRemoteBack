@@ -42,8 +42,8 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPost("/login")]
-        public async Task<IActionResult> Login([FromBody] LoginModel data)
+        [HttpGet("/login")]
+        public async Task<IActionResult> Login([FromQuery] LoginModel data)
         {
             ApplicationUser? user = await _userManager.FindByEmailAsync(data.Email ?? "");
             if (user == null || !await _userManager.CheckPasswordAsync(user, data.Password ?? ""))
@@ -125,8 +125,8 @@ namespace CryptonRemoteBack.Controllers
             return Ok("Success");
         }
 
-        [HttpPost("/refresh-token")]
-        public async Task<IActionResult> RefreshToken(TokenModel tokenModel)
+        [HttpGet("/refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromQuery] TokenModel tokenModel)
         {
             if (tokenModel == null)
             {
@@ -183,12 +183,12 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPost("/changepassword")]
+        [HttpPatch("/changepassword")]
         [Authorize]
-        public async Task<IActionResult> ChangePassword(ChangeUserPasswordModel model,
+        public async Task<IActionResult> ChangePassword([FromBody] ChangeUserPasswordModel model,
                                                         CancellationToken ct)
         {
-            ApplicationUser? user = await _userManager.FindByIdAsync(model.UserId ?? "");
+            ApplicationUser? user = await _userManager.FindByIdAsync(UserId ?? "");
             if (user != null)
             {
                 if (string.IsNullOrWhiteSpace(model.NewPassword))
@@ -214,16 +214,16 @@ namespace CryptonRemoteBack.Controllers
                 }
             }
 
-            return BadRequest($"User {model.UserId} not found in database");
+            return BadRequest($"User {UserId} not found in database");
         }
 
 
-        [HttpPost("/changeemail")]
+        [HttpPatch("/changeemail")]
         [Authorize]
-        public async Task<IActionResult> ChangeEmail(ChangeUserContactsModel model,
+        public async Task<IActionResult> ChangeEmail([FromBody] ChangeUserContactsModel model,
                                                      CancellationToken ct)
         {
-            ApplicationUser? user = await _userManager.FindByIdAsync(model.UserId ?? "");
+            ApplicationUser? user = await _userManager.FindByIdAsync(UserId ?? "");
             if (user != null)
             {
                 if (!await _userManager.CheckPasswordAsync(user, model.Password ?? ""))
@@ -266,7 +266,7 @@ namespace CryptonRemoteBack.Controllers
                 return Ok("Contacts changed successfully");
             }
 
-            return BadRequest($"User {model.UserId} not found in database");
+            return BadRequest($"User {UserId} not found in database");
         }
 
 

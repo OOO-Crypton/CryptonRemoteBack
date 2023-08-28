@@ -52,11 +52,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPatch("/wallets/delete")]
+        [HttpDelete("/wallets/delete/{walletId:Guid}")]
         [Authorize]
         public async Task<ActionResult> DeleteWallet(
             [FromServices] CryptonRemoteBackDbContext db,
-            [FromBody] Guid walletId,
+            [FromRoute] Guid walletId,
             CancellationToken ct)
         {
             Wallet? wallet = await db.Wallets
@@ -122,7 +122,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPost("/wallets/{walletId:Guid}/edit")]
+        [HttpPut("/wallets/{walletId:Guid}/edit")]
         [Authorize]
         public async Task<ActionResult> EditWallet(
             [FromForm] WalletModel input,

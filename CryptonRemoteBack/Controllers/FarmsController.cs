@@ -53,11 +53,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPatch("/farms/delete")]
+        [HttpDelete("/farms/delete/{farmId:Guid}")]
         [Authorize]
         public async Task<ActionResult> DeleteFarm(
             [FromServices] CryptonRemoteBackDbContext db,
-            [FromBody] Guid farmId,
+            [FromRoute] Guid farmId,
             CancellationToken ct)
         {
             Farm? farm = await db.Farms

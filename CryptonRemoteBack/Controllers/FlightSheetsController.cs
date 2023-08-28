@@ -57,11 +57,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPatch("/flight_sheets/delete")]
+        [HttpDelete("/flight_sheets/delete/{flightSheetId:Guid}")]
         [Authorize]
         public async Task<ActionResult> DeleteFlightSheet(
             [FromServices] CryptonRemoteBackDbContext db,
-            [FromBody] Guid flightSheetId,
+            [FromRoute] Guid flightSheetId,
             CancellationToken ct)
         {
             FlightSheet? flightSheet = await db.FlightSheets
@@ -160,7 +160,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPost("/flight_sheets/{flightSheetId:Guid}/edit")]
+        [HttpPut("/flight_sheets/{flightSheetId:Guid}/edit")]
         [Authorize]
         public async Task<ActionResult> EditFlightSheet(
             [FromForm] FlightSheetModel input,

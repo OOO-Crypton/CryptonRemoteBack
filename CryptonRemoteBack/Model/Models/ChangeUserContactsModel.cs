@@ -4,7 +4,6 @@ namespace CryptonRemoteBack.Model.Models
 {
     public class ChangeUserContactsModel
     {
-        public string? UserId { get; set; }
 
         [Required(ErrorMessage = "Password is required")]
         public string? Password { get; set; }
