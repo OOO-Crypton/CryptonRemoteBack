@@ -26,7 +26,7 @@ namespace CryptonRemoteBack.Controllers
         {
             if (string.IsNullOrWhiteSpace(input.Name)
                 || string.IsNullOrWhiteSpace(input.Address)
-                || input.CurrencyId == Guid.Empty)
+                || input.CurrencyId == null)
             {
                 return BadRequest("Fields Name, Address or CurrencyId is empty");
             }
@@ -52,11 +52,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpDelete("/wallets/delete/{walletId:Guid}")]
+        [HttpDelete("/wallets/delete/{walletId:int}")]
         [Authorize]
         public async Task<ActionResult> DeleteWallet(
             [FromServices] CryptonRemoteBackDbContext db,
-            [FromRoute] Guid walletId,
+            [FromRoute] int walletId,
             CancellationToken ct)
         {
             Wallet? wallet = await db.Wallets
@@ -89,11 +89,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/wallets/{walletId:Guid}")]
+        [HttpGet("/wallets/{walletId:int}")]
         [Authorize]
         public async Task<ActionResult<WalletView>> GetWallet(
             [FromServices] CryptonRemoteBackDbContext db,
-            [FromRoute] Guid walletId,
+            [FromRoute] int walletId,
             CancellationToken ct)
         {
             Wallet? wallet = await db.Wallets
@@ -122,11 +122,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPut("/wallets/{walletId:Guid}/edit")]
+        [HttpPut("/wallets/{walletId:int}/edit")]
         [Authorize]
         public async Task<ActionResult> EditWallet(
             [FromForm] WalletModel input,
-            [FromRoute] Guid walletId,
+            [FromRoute] int walletId,
             [FromServices] CryptonRemoteBackDbContext db,
             CancellationToken ct)
         {
@@ -142,7 +142,7 @@ namespace CryptonRemoteBack.Controllers
 
             Currency? currency = await db.Currencies
                 .FirstOrDefaultAsync(x => x.Id == input.CurrencyId, ct);
-            if (input.CurrencyId != Guid.Empty && currency != null)
+            if (input.CurrencyId != null && currency != null)
             {
                 wallet.Currency = currency;
             }

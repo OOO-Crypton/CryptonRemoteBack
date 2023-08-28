@@ -1,11 +1,10 @@
 ﻿using CryptonRemoteBack.Domain;
-using CryptonRemoteBack.Infrastructure.Migrations;
 
 namespace CryptonRemoteBack.Model.Views
 {
     public class WalletView
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public UserView User { get; set; } = null!;

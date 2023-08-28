@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -11,7 +10,7 @@ namespace CryptonRemoteBack.Domain
     [Table("Currencies")]
     public class Currency
     {
-        [Key] public Guid Id { get; set; }
+        [Key] public int Id { get; set; }
 
         /// <summary>
         /// Наименование

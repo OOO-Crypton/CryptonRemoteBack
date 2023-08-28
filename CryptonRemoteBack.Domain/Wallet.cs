@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CryptonRemoteBack.Domain
@@ -10,7 +9,7 @@ namespace CryptonRemoteBack.Domain
     [Table("Wallets")]
     public class Wallet
     {
-        [Key] public Guid Id { get; set; }
+        [Key] public int Id { get; set; }
 
         /// <summary>
         /// Наименование

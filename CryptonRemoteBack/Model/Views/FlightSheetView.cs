@@ -4,7 +4,7 @@ namespace CryptonRemoteBack.Model.Views
 {
     public class FlightSheetView
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string ExtendedConfig { get; set; } = string.Empty;
 

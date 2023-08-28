@@ -2,6 +2,6 @@
 {
     public class FarmFSModel
     {
-        public Guid? ActiveFlightSheetId { get; set; }
+        public int? ActiveFlightSheetId { get; set; }
     }
 }

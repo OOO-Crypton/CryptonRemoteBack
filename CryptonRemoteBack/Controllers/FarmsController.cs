@@ -53,11 +53,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpDelete("/farms/delete/{farmId:Guid}")]
+        [HttpDelete("/farms/delete/{farmId:int}")]
         [Authorize]
         public async Task<ActionResult> DeleteFarm(
             [FromServices] CryptonRemoteBackDbContext db,
-            [FromRoute] Guid farmId,
+            [FromRoute] int farmId,
             CancellationToken ct)
         {
             Farm? farm = await db.Farms
@@ -90,11 +90,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/farms/{farmId:Guid}")]
+        [HttpGet("/farms/{farmId:int}")]
         [Authorize]
         public async Task<ActionResult<FarmView>> GetFarm(
             [FromServices] CryptonRemoteBackDbContext db,
-            [FromRoute] Guid farmId,
+            [FromRoute] int farmId,
             CancellationToken ct)
         {
             Farm? farm = await db.Farms
@@ -111,11 +111,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPatch("/farms/{farmId:Guid}/switch_flight_sheet")]
+        [HttpPatch("/farms/{farmId:int}/switch_flight_sheet")]
         [Authorize]
         public async Task<ActionResult> SwitchFlightSheet(
-            [FromBody] Guid? flightSheetId,
-            [FromRoute] Guid farmId,
+            [FromBody] int? flightSheetId,
+            [FromRoute] int farmId,
             [FromServices] CryptonRemoteBackDbContext db,
             CancellationToken ct)
         {

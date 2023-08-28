@@ -6,6 +6,6 @@
 
         public string? Address { get; set; } = string.Empty;
 
-        public Guid CurrencyId { get; set; } = Guid.Empty;
+        public int? CurrencyId { get; set; } = null;
     }
 }

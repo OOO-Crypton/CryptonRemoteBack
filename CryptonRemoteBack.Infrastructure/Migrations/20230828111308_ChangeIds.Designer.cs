@@ -3,6 +3,7 @@ using System;
 using CryptonRemoteBack.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CryptonRemoteBack.Infrastructure.Migrations
 {
     [DbContext(typeof(CryptonRemoteBackDbContext))]
-    partial class CryptonRemoteBackDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230828111308_ChangeIds")]
+    partial class ChangeIds
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -94,30 +97,30 @@ namespace CryptonRemoteBack.Infrastructure.Migrations
 
             modelBuilder.Entity("CryptonRemoteBack.Domain.Currency", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("Id2")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id2"));
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id2");
 
                     b.ToTable("Currencies");
                 });
 
             modelBuilder.Entity("CryptonRemoteBack.Domain.Farm", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("Id2")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id2"));
 
-                    b.Property<int?>("ActiveFlightSheetId")
+                    b.Property<int?>("ActiveFlightSheetId2")
                         .HasColumnType("integer");
 
                     b.Property<string>("LocalSystemAddress")
@@ -136,9 +139,9 @@ namespace CryptonRemoteBack.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id2");
 
-                    b.HasIndex("ActiveFlightSheetId");
+                    b.HasIndex("ActiveFlightSheetId2");
 
                     b.HasIndex("UserId");
 
@@ -147,53 +150,53 @@ namespace CryptonRemoteBack.Infrastructure.Migrations
 
             modelBuilder.Entity("CryptonRemoteBack.Domain.FlightSheet", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("Id2")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id2"));
 
                     b.Property<string>("ExtendedConfig")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("MinerId")
+                    b.Property<int>("MinerId2")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("PoolId")
+                    b.Property<int>("PoolId2")
                         .HasColumnType("integer");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("WalletId")
+                    b.Property<int>("WalletId2")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id2");
 
-                    b.HasIndex("MinerId");
+                    b.HasIndex("MinerId2");
 
-                    b.HasIndex("PoolId");
+                    b.HasIndex("PoolId2");
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("WalletId");
+                    b.HasIndex("WalletId2");
 
                     b.ToTable("FlightSheets");
                 });
 
             modelBuilder.Entity("CryptonRemoteBack.Domain.Miner", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("Id2")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id2"));
 
                     b.Property<string>("MinerInfo")
                         .IsRequired()
@@ -203,63 +206,63 @@ namespace CryptonRemoteBack.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id2");
 
                     b.ToTable("Miners");
                 });
 
             modelBuilder.Entity("CryptonRemoteBack.Domain.Pool", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("Id2")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id2"));
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id2");
 
                     b.ToTable("Pools");
                 });
 
             modelBuilder.Entity("CryptonRemoteBack.Domain.PoolAddress", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("Id2")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id2"));
 
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("PoolId")
+                    b.Property<int>("PoolId2")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id2");
 
-                    b.HasIndex("PoolId");
+                    b.HasIndex("PoolId2");
 
                     b.ToTable("PoolAddresses");
                 });
 
             modelBuilder.Entity("CryptonRemoteBack.Domain.Wallet", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("Id2")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id2"));
 
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("CurrencyId")
+                    b.Property<int>("CurrencyId2")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
@@ -270,9 +273,9 @@ namespace CryptonRemoteBack.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id2");
 
-                    b.HasIndex("CurrencyId");
+                    b.HasIndex("CurrencyId2");
 
                     b.HasIndex("UserId");
 
@@ -415,7 +418,7 @@ namespace CryptonRemoteBack.Infrastructure.Migrations
                 {
                     b.HasOne("CryptonRemoteBack.Domain.FlightSheet", "ActiveFlightSheet")
                         .WithMany()
-                        .HasForeignKey("ActiveFlightSheetId");
+                        .HasForeignKey("ActiveFlightSheetId2");
 
                     b.HasOne("CryptonRemoteBack.Domain.ApplicationUser", "User")
                         .WithMany("Farms")
@@ -432,13 +435,13 @@ namespace CryptonRemoteBack.Infrastructure.Migrations
                 {
                     b.HasOne("CryptonRemoteBack.Domain.Miner", "Miner")
                         .WithMany("FlightSheets")
-                        .HasForeignKey("MinerId")
+                        .HasForeignKey("MinerId2")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("CryptonRemoteBack.Domain.Pool", "Pool")
                         .WithMany("FlightSheets")
-                        .HasForeignKey("PoolId")
+                        .HasForeignKey("PoolId2")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -450,7 +453,7 @@ namespace CryptonRemoteBack.Infrastructure.Migrations
 
                     b.HasOne("CryptonRemoteBack.Domain.Wallet", "Wallet")
                         .WithMany()
-                        .HasForeignKey("WalletId")
+                        .HasForeignKey("WalletId2")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -467,7 +470,7 @@ namespace CryptonRemoteBack.Infrastructure.Migrations
                 {
                     b.HasOne("CryptonRemoteBack.Domain.Pool", "Pool")
                         .WithMany("PoolAddresses")
-                        .HasForeignKey("PoolId")
+                        .HasForeignKey("PoolId2")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -478,7 +481,7 @@ namespace CryptonRemoteBack.Infrastructure.Migrations
                 {
                     b.HasOne("CryptonRemoteBack.Domain.Currency", "Currency")
                         .WithMany("Wallets")
-                        .HasForeignKey("CurrencyId")
+                        .HasForeignKey("CurrencyId2")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

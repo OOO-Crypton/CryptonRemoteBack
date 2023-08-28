@@ -42,13 +42,13 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/login")]
-        public async Task<IActionResult> Login([FromQuery] LoginModel data)
+        [HttpPost("/login")]
+        public async Task<IActionResult> Login([FromBody] LoginModel data)
         {
             ApplicationUser? user = await _userManager.FindByEmailAsync(data.Email ?? "");
             if (user == null || !await _userManager.CheckPasswordAsync(user, data.Password ?? ""))
             {
-                return Unauthorized("Введён неверный логин/пароль");
+                return Unauthorized(new { Email = "Введён неверный e-mail/пароль", Password = "" });
             }
 
             List<Claim>? authClaims = new()
@@ -91,11 +91,6 @@ namespace CryptonRemoteBack.Controllers
             if (await _userManager.FindByEmailAsync(registerModel.Email ?? "") != null)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "User already exists");
-            }
-
-            if (string.IsNullOrWhiteSpace(registerModel.Password))
-            {
-                return BadRequest("Password is empty");
             }
 
             ApplicationUser user = new()

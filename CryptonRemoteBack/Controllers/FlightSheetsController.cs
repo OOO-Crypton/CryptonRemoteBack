@@ -25,9 +25,9 @@ namespace CryptonRemoteBack.Controllers
             CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(input.Name)
-                || input.MinerId == Guid.Empty
-                || input.WalletId == Guid.Empty
-                || input.PoolId == Guid.Empty)
+                || input.MinerId == null
+                || input.WalletId == null
+                || input.PoolId == null)
             {
                 return BadRequest("Fields Name, MinerId, WalletId or PoolId is empty");
             }
@@ -57,11 +57,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpDelete("/flight_sheets/delete/{flightSheetId:Guid}")]
+        [HttpDelete("/flight_sheets/delete/{flightSheetId:int}")]
         [Authorize]
         public async Task<ActionResult> DeleteFlightSheet(
             [FromServices] CryptonRemoteBackDbContext db,
-            [FromRoute] Guid flightSheetId,
+            [FromRoute] int flightSheetId,
             CancellationToken ct)
         {
             FlightSheet? flightSheet = await db.FlightSheets
@@ -96,11 +96,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/flight_sheets/{flightSheetId:Guid}")]
+        [HttpGet("/flight_sheets/{flightSheetId:int}")]
         [Authorize]
         public async Task<ActionResult<FlightSheetView>> GetFlightSheet(
             [FromServices] CryptonRemoteBackDbContext db,
-            [FromRoute] Guid flightSheetId,
+            [FromRoute] int flightSheetId,
             CancellationToken ct)
         {
             FlightSheet? flightSheet = await db.FlightSheets
@@ -144,11 +144,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/flight_sheets/miners_list/{minerId:Guid}")]
+        [HttpGet("/flight_sheets/miners_list/{minerId:int}")]
         [Authorize]
         public async Task<ActionResult<MinerView>> GetMinerInfo(
             [FromServices] CryptonRemoteBackDbContext db,
-            [FromRoute] Guid minerId,
+            [FromRoute] int minerId,
             CancellationToken ct)
         {
             Miner? miner = await db.Miners.FirstOrDefaultAsync(x => x.Id == minerId, ct);
@@ -160,11 +160,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPut("/flight_sheets/{flightSheetId:Guid}/edit")]
+        [HttpPut("/flight_sheets/{flightSheetId:int}/edit")]
         [Authorize]
         public async Task<ActionResult> EditFlightSheet(
             [FromForm] FlightSheetModel input,
-            [FromRoute] Guid flightSheetId,
+            [FromRoute] int flightSheetId,
             [FromServices] CryptonRemoteBackDbContext db,
             CancellationToken ct)
         {
@@ -184,17 +184,17 @@ namespace CryptonRemoteBack.Controllers
             Wallet? wallet = await db.Wallets.FirstOrDefaultAsync(x => x.Id == input.WalletId, ct);
             Pool? pool = await db.Pools.FirstOrDefaultAsync(x => x.Id == input.PoolId, ct);
 
-            if (input.MinerId != Guid.Empty && miner != null)
+            if (input.MinerId != null && miner != null)
             {
                 flightSheet.Miner = miner;
             }
 
-            if (input.WalletId != Guid.Empty && wallet != null)
+            if (input.WalletId != null && wallet != null)
             {
                 flightSheet.Wallet = wallet;
             }
 
-            if (input.PoolId != Guid.Empty && pool != null)
+            if (input.PoolId != null && pool != null)
             {
                 flightSheet.Pool = pool;
             }

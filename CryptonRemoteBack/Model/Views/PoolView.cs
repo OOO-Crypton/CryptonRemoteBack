@@ -4,7 +4,7 @@ namespace CryptonRemoteBack.Model.Views
 {
     public class PoolView
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public List<PoolAddressView> PoolAddresses { get; set; } = new();
 

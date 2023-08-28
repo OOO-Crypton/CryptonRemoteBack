@@ -4,7 +4,7 @@ namespace CryptonRemoteBack.Model.Views
 {
     public class PoolAddressView
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string Address { get; set; } = string.Empty;
 
         public PoolAddressView(PoolAddress? input)
