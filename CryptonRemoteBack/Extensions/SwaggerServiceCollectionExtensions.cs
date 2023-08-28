@@ -16,7 +16,7 @@ namespace CryptonRemoteBack.Extensions
                     Version = "v1",
                     Title = "CryptonRemoteBackClient"
                 });
-                options.AddServer(new OpenApiServer { Url = "https://localhost:7195" });
+                options.AddServer(new OpenApiServer { Url = "http://37.230.112.158:8080/api" });
 
 
                 var securityScheme = new OpenApiSecurityScheme
