@@ -48,7 +48,8 @@ namespace CryptonRemoteBack.Controllers
                 User = await db.Users.FirstAsync(x => x.Id == UserId.ToString(), ct),
                 Miner = miner,
                 Wallet = wallet,
-                Pool = pool
+                Pool = pool,
+                IsActive = false
             };
 
             await db.FlightSheets.AddAsync(flightSheet, ct);
@@ -211,6 +212,39 @@ namespace CryptonRemoteBack.Controllers
 
             await db.SaveChangesAsync(ct);
             return Ok(flightSheet.Id);
+        }
+
+
+        [HttpPatch("/flight_sheets/{flightSheetId:int}/set_active")]
+        [Authorize]
+        public async Task<ActionResult> FlightSheetSetActive(
+            [FromRoute] int flightSheetId,
+            [FromServices] CryptonRemoteBackDbContext db,
+            CancellationToken ct)
+        {
+            List<FlightSheet> userFlightSheets = await db.FlightSheets
+                .Include(x => x.User)
+                .Where(x => x.User.Id == UserId).ToListAsync(ct);
+
+            if (userFlightSheets == null || !userFlightSheets.Any())
+            {
+                return NotFound($"FlightSheets not found for current user");
+            }
+
+            if (!userFlightSheets.Any(x => x.Id == flightSheetId))
+            {
+                return NotFound($"FlightSheet {flightSheetId} not found for current user");
+            }
+
+            for (int i = 0; i < userFlightSheets.Count; i++)
+            {
+                if (userFlightSheets[i].Id == flightSheetId)
+                    userFlightSheets[i].IsActive = true;
+                else userFlightSheets[i].IsActive = false;
+            }
+
+            await db.SaveChangesAsync(ct);
+            return Ok(flightSheetId);
         }
     }
 }

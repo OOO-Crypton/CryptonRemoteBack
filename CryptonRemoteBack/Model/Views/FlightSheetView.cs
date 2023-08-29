@@ -7,6 +7,7 @@ namespace CryptonRemoteBack.Model.Views
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string ExtendedConfig { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
 
         public MinerView Miner { get; set; } = null!;
         public WalletView Wallet { get; set; } = null!;
@@ -19,6 +20,7 @@ namespace CryptonRemoteBack.Model.Views
             Id = input.Id;
             Name = input.Name;
             ExtendedConfig = input.ExtendedConfig;
+            IsActive = input.IsActive;
             Miner = new MinerView(input.Miner);
             Wallet = new WalletView(input.Wallet);
             Pool = new PoolView(input.Pool);
