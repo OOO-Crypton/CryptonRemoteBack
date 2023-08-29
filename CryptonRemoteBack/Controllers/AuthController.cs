@@ -215,7 +215,7 @@ namespace CryptonRemoteBack.Controllers
 
         [HttpPatch("/changeemail")]
         [Authorize]
-        public async Task<IActionResult> ChangeEmail([FromBody] ChangeUserContactsModel model,
+        public async Task<IActionResult> ChangeEmail([FromBody] ChangeUserEmailModel model,
                                                      CancellationToken ct)
         {
             ApplicationUser? user = await _userManager.FindByIdAsync(UserId ?? "");
@@ -223,7 +223,7 @@ namespace CryptonRemoteBack.Controllers
             {
                 if (!await _userManager.CheckPasswordAsync(user, model.Password ?? ""))
                 {
-                    return BadRequest("Wrong password");
+                    return BadRequest(new { Password = "Wrong password" });
                 }
 
                 if (!string.IsNullOrWhiteSpace(model.Email))
@@ -242,6 +242,26 @@ namespace CryptonRemoteBack.Controllers
                     }
                 }
 
+                return Ok("Email changed successfully");
+            }
+
+            return BadRequest($"User {UserId} not found in database");
+        }
+
+
+        [HttpPatch("/changephone")]
+        [Authorize]
+        public async Task<IActionResult> ChangePhone([FromBody] ChangeUserPhoneModel model,
+                                                     CancellationToken ct)
+        {
+            ApplicationUser? user = await _userManager.FindByIdAsync(UserId ?? "");
+            if (user != null)
+            {
+                if (!await _userManager.CheckPasswordAsync(user, model.Password ?? ""))
+                {
+                    return BadRequest(new { Password = "Wrong password" });
+                }
+
                 if (!string.IsNullOrWhiteSpace(model.PhoneNumber))
                 {
                     IdentityResult result = await _userManager
@@ -258,7 +278,7 @@ namespace CryptonRemoteBack.Controllers
                     }
                 }
 
-                return Ok("Contacts changed successfully");
+                return Ok("Phone number changed successfully");
             }
 
             return BadRequest($"User {UserId} not found in database");
