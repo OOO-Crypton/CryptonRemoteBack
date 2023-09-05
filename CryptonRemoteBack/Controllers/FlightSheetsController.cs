@@ -48,8 +48,7 @@ namespace CryptonRemoteBack.Controllers
                 User = await db.Users.FirstAsync(x => x.Id == UserId.ToString(), ct),
                 Miner = miner,
                 Wallet = wallet,
-                Pool = pool,
-                IsActive = false
+                Pool = pool
             };
 
             await db.FlightSheets.AddAsync(flightSheet, ct);
@@ -93,7 +92,13 @@ namespace CryptonRemoteBack.Controllers
                 .Include(x => x.Wallet).ThenInclude(x => x.Currency)
                 .Where(x => x.User.Id == UserId).ToListAsync(ct);
 
-            return Ok(flightSheets.Select(x => new FlightSheetView(x)));
+            List<Farm> farms = await db.Farms
+                .Include(x => x.User)
+                .Include(x => x.ActiveFlightSheet)
+                .Where(x => x.User.Id == UserId).ToListAsync(ct);
+
+            return Ok(flightSheets.Select(x =>
+                new FlightSheetView(x, farms.Any(x => x.ActiveFlightSheet?.Id == x.Id))));
         }
 
 
@@ -116,7 +121,14 @@ namespace CryptonRemoteBack.Controllers
                 return NotFound($"FlightSheet {flightSheetId} not found for current user");
             }
 
-            return Ok(new FlightSheetView(flightSheet));
+            Farm? farm = await db.Farms
+                .Include(x => x.User)
+                .Include(x => x.ActiveFlightSheet)
+                .FirstOrDefaultAsync(x => x.User.Id == UserId
+                    && x.ActiveFlightSheet != null
+                    && x.ActiveFlightSheet.Id == flightSheet.Id, ct);
+
+            return Ok(new FlightSheetView(flightSheet, farm != null));
         }
 
 
@@ -212,39 +224,6 @@ namespace CryptonRemoteBack.Controllers
 
             await db.SaveChangesAsync(ct);
             return Ok(flightSheet.Id);
-        }
-
-
-        [HttpPatch("/flight_sheets/{flightSheetId:int}/set_active")]
-        [Authorize]
-        public async Task<ActionResult> FlightSheetSetActive(
-            [FromRoute] int flightSheetId,
-            [FromServices] CryptonRemoteBackDbContext db,
-            CancellationToken ct)
-        {
-            List<FlightSheet> userFlightSheets = await db.FlightSheets
-                .Include(x => x.User)
-                .Where(x => x.User.Id == UserId).ToListAsync(ct);
-
-            if (userFlightSheets == null || !userFlightSheets.Any())
-            {
-                return NotFound($"FlightSheets not found for current user");
-            }
-
-            if (!userFlightSheets.Any(x => x.Id == flightSheetId))
-            {
-                return NotFound($"FlightSheet {flightSheetId} not found for current user");
-            }
-
-            for (int i = 0; i < userFlightSheets.Count; i++)
-            {
-                if (userFlightSheets[i].Id == flightSheetId)
-                    userFlightSheets[i].IsActive = true;
-                else userFlightSheets[i].IsActive = false;
-            }
-
-            await db.SaveChangesAsync(ct);
-            return Ok(flightSheetId);
         }
     }
 }

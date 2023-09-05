@@ -14,13 +14,13 @@ namespace CryptonRemoteBack.Model.Views
         public PoolView Pool { get; set; } = null!;
         public UserView User { get; set; } = null!;
 
-        public FlightSheetView(FlightSheet? input)
+        public FlightSheetView(FlightSheet? input, bool isActive)
         {
             if (input == null) return;
             Id = input.Id;
             Name = input.Name;
             ExtendedConfig = input.ExtendedConfig;
-            IsActive = input.IsActive;
+            IsActive = isActive;
             Miner = new MinerView(input.Miner);
             Wallet = new WalletView(input.Wallet);
             Pool = new PoolView(input.Pool);

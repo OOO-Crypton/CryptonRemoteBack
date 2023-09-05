@@ -5,15 +5,21 @@ using CryptonRemoteBack.Domain;
 using CryptonRemoteBack.Extensions;
 using CryptonRemoteBack.Infrastructure;
 using System.Text;
-using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
 
+//main context
 string? dbConnString = builder.Configuration
     .GetConnectionString("DbConnString")
     ?? "Server=localhost;Port=5432;Database=cryptondatabase;User Id=postgres;Password=postgres;";
 builder.Services.AddNpgsqlDbContext<CryptonRemoteBackDbContext>(dbConnString);
+
+//parsed context
+string? DataDbConnString = builder.Configuration
+    .GetConnectionString("DataDbConnString")
+    ?? "Server=localhost;Port=5432;Database=parser;User Id=postgres;Password=postgres;";
+builder.Services.AddNpgsqlDbContext<DataParserDbContext>(dbConnString);
 
 #region Authorization
 

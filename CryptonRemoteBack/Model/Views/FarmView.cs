@@ -8,6 +8,7 @@ namespace CryptonRemoteBack.Model.Views
         public string SystemInfo { get; set; } = string.Empty;
         public string LocalSystemAddress { get; set; } = string.Empty;
         public string LocalSystemID { get; set; } = string.Empty;
+        public string ContainerGUID { get; set; } = string.Empty;
         public UserView User { get; set; } = null!;
         public FlightSheetView? ActiveFlightSheet { get; set; }
 
@@ -17,9 +18,10 @@ namespace CryptonRemoteBack.Model.Views
             SystemInfo = farm.SystemInfo;
             LocalSystemID = farm.LocalSystemID;
             LocalSystemAddress = farm.LocalSystemAddress;
+            ContainerGUID = farm.ContainerGUID;
             User = new UserView(farm.User);
             ActiveFlightSheet = farm.ActiveFlightSheet != null
-                ? new FlightSheetView(farm.ActiveFlightSheet) : null;
+                ? new FlightSheetView(farm.ActiveFlightSheet, true) : null;
         }
     }
 }

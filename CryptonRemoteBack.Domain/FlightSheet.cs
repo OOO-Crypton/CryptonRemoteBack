@@ -21,8 +21,6 @@ namespace CryptonRemoteBack.Domain
         /// </summary>
         public string ExtendedConfig { get; set; } = string.Empty;
 
-        public bool IsActive { get; set; }
-
         public Miner Miner { get; set; } = null!;
         public Wallet Wallet { get; set; } = null!;
         public Pool Pool { get; set; } = null!;

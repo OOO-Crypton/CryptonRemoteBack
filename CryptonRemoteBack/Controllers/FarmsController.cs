@@ -27,11 +27,6 @@ namespace CryptonRemoteBack.Controllers
             FlightSheet? fs = await db.FlightSheets
                 .FirstOrDefaultAsync(x => x.Id == input.ActiveFlightSheetId, ct);
 
-            if (input.ActiveFlightSheetId != null && fs == null)
-            {
-                return BadRequest($"FlightSheet {input.ActiveFlightSheetId} not found");
-            }
-
             Farm farm = new()
             {
                 User = await db.Users.FirstAsync(x => x.Id == UserId.ToString(), ct),
