@@ -12,12 +12,24 @@ namespace CryptonRemoteBack.Controllers
     [ApiController]
     public class PredictionsController : ControllerBase
     {
+        private readonly string python_path;
+        private readonly string predict_py_path;
+
+        public PredictionsController(IConfiguration config)
+        {
+            python_path = config["PythonPath"]
+                ?? "C:\\Users\\kseny\\AppData\\Local\\Programs\\Python\\Python311\\python.exe";
+            predict_py_path = config["PredictPyPath"]
+                ?? "D:\\osiris\\Crypton\\Crypton_Python\\MLCrypton\\predict.py";
+        }
+
+
         [HttpGet("/predictions/get_prediction")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<double>>> GetPrediction(
             [FromQuery] PredictionModel input,
             [FromServices] CryptonRemoteBackDbContext db,
-            [FromServices] DataParserDbContext db_data,
+            //[FromServices] DataParserDbContext db_data,
             CancellationToken ct)
         {
             Currency? currency = await db.Currencies
@@ -25,48 +37,61 @@ namespace CryptonRemoteBack.Controllers
 
             if (currency == null)
             {
-                return BadRequest($"Currency {input.CurrencyId} not found");
+                return BadRequest($"Currency with id = {input.CurrencyId} not found");
             }
 
-            List<Monitoring> previousWeekMons = await db_data.Monitorings
-                .Include(x => x.Coin)
-                .Where(x => x.Coin.Name == currency.Name && x.Date >= DateTime.UtcNow.AddDays(-7))
-                .AsNoTracking()
-                .ToListAsync(ct);
+            List<Monitoring> previousWeekMons = new();
+            //List<Monitoring> previousWeekMons = await db_data.Monitorings
+            //    .Include(x => x.Coin)
+            //    .Where(x => x.Coin.Name == currency.Name && x.Date >= DateTime.UtcNow.AddDays(-7))
+            //    .AsNoTracking().ToListAsync(ct);
+
+            if (previousWeekMons == null || !previousWeekMons.Any())
+            {
+                return NotFound($"Not enough monitorings now");
+            }
 
             Monitoring lastMon = previousWeekMons.MaxBy(x => x.Date)!;
             Monitoring firstMon = previousWeekMons.MinBy(x => x.Date)!;
 
             Dictionary<int, ParamsDiff> diffs = new();
-            
+
             for (int i = -6; i < 0; i++)
             {
-                diffs.Add(i, new(firstMon,
-                    previousWeekMons
-                        .Where(x => x.Date >= DateTime.UtcNow.AddDays(i))
-                        .MinBy(x => x.Date)!));
+                diffs.Add(i, new(firstMon, previousWeekMons
+                    .Where(x => x.Date >= DateTime.UtcNow.AddDays(i))
+                    .MinBy(x => x.Date)!));
             }
             diffs.Add(0, new(firstMon, lastMon));
 
             List<double> predictions = new();
             for (int i = -6; i <= 0; i++)
             {
-                // TODO вызов прогноза, передача этих параметров
-                // (куда хэш)
-                // ещё надо путь до предсказывателя в конфиг засунуть
-                Process.Start($"{currency.Name} " +
-                    $"{lastMon.BlockReward + diffs[i].BlockReward}" +
-                    $"{lastMon.LastBlock + diffs[i].LastBlock}" +
-                    $"{lastMon.Difficulty + diffs[i].Difficulty}" +
-                    $"{lastMon.Nethash + diffs[i].Nethash}" +
-                    $"{lastMon.ExRate + diffs[i].ExRate}" +
-                    $"{lastMon.ExchangeRateVol + diffs[i].ExchangeRateVol}" +
-                    $"{lastMon.MarketCap + diffs[i].MarketCap}" +
-                    $"{lastMon.PoolFee + diffs[i].PoolFee}" +
-                    $"{lastMon.DailyEmission + diffs[i].DailyEmission}");
-                // TODO чтение вывода прогноза
+                // TODO куда хэш
+                string result = "";
+                ProcessStartInfo start = new()
+                {
+                    FileName = python_path,
+                    Arguments = $"{predict_py_path} {currency.Name} " +
+                        $"{lastMon.BlockReward + diffs[i].BlockReward} " +
+                        $"{lastMon.LastBlock + diffs[i].LastBlock} " +
+                        $"{lastMon.Difficulty + diffs[i].Difficulty} " +
+                        $"{lastMon.Nethash + diffs[i].Nethash} " +
+                        $"{lastMon.ExRate + diffs[i].ExRate} " +
+                        $"{lastMon.ExchangeRateVol + diffs[i].ExchangeRateVol} " +
+                        $"{lastMon.MarketCap + diffs[i].MarketCap} " +
+                        $"{lastMon.PoolFee + diffs[i].PoolFee} " +
+                        $"{lastMon.DailyEmission + diffs[i].DailyEmission}",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true
+                };
+                using (Process process = Process.Start(start)!)
+                {
+                    using StreamReader reader = process.StandardOutput;
+                    result = reader.ReadToEnd();
+                }
+                predictions.Add(double.Parse(result.Trim().Replace("[", "").Replace("]", "")));
             }
-
 
             return Ok(predictions);
         }
