@@ -40,6 +40,7 @@ namespace CryptonRemoteBack.Controllers
                 return BadRequest($"Currency with id = {input.CurrencyId} not found");
             }
 
+            List<double> predictions = new();
             List<Monitoring> previousWeekMons = new();
             //List<Monitoring> previousWeekMons = await db_data.Monitorings
             //    .Include(x => x.Coin)
@@ -48,7 +49,9 @@ namespace CryptonRemoteBack.Controllers
 
             if (previousWeekMons == null || !previousWeekMons.Any())
             {
-                return NotFound($"Not enough monitorings now");
+                //если недостаточно предыдущих наблюдений - возвращаем нули
+                predictions.AddRange(new List<double>() { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 });
+                return predictions;
             }
 
             Monitoring lastMon = previousWeekMons.MaxBy(x => x.Date)!;
@@ -63,8 +66,6 @@ namespace CryptonRemoteBack.Controllers
                     .MinBy(x => x.Date)!));
             }
             diffs.Add(0, new(firstMon, lastMon));
-
-            List<double> predictions = new();
             for (int i = -6; i <= 0; i++)
             {
                 // TODO куда хэш
