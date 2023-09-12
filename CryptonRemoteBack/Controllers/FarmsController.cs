@@ -157,5 +157,25 @@ namespace CryptonRemoteBack.Controllers
             await db.SaveChangesAsync(ct);
             return Ok(farm.Id);
         }
+
+
+        [HttpPost("/farms/set_info")]
+        public async Task<ActionResult> SetInfo(
+            [FromForm] FarmInfoModel input,
+            [FromServices] CryptonRemoteBackDbContext db,
+            CancellationToken ct)
+        {
+            Farm? farm = await db.Farms
+                .FirstOrDefaultAsync(x => x.LocalSystemID == input.LocalSystemID, ct);
+
+            if (farm == null)
+            {
+                return NotFound($"Farm {input.LocalSystemID} not found");
+            }
+
+            farm.SystemInfo = input.SystemInfo;
+            await db.SaveChangesAsync(ct);
+            return Ok(farm.Id);
+        }
     }
 }

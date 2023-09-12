@@ -86,10 +86,10 @@ builder.Services.AddSingleton<IConfiguration>(configuration); ;
 #endregion
 
 builder.Services.AddCors();
+
 var app = builder.Build();
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-// Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
 //{
 app.UseSwagger();
@@ -103,7 +103,7 @@ app.UseCors(x => x
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
-            .SetIsOriginAllowed((host) => true)); // allow credentials
+            .SetIsOriginAllowed((host) => true));
 
 app.UseAuthentication();
 app.UseAuthorization();
