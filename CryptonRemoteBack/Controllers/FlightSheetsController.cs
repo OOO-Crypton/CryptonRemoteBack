@@ -26,19 +26,17 @@ namespace CryptonRemoteBack.Controllers
         {
             if (string.IsNullOrWhiteSpace(input.Name)
                 || input.MinerId == null
-                || input.WalletId == null
-                || input.PoolId == null)
+                || input.WalletId == null)
             {
                 return BadRequest("Fields Name, MinerId, WalletId or PoolId is empty");
             }
 
             Miner? miner = await db.Miners.FirstOrDefaultAsync(x => x.Id == input.MinerId, ct);
             Wallet? wallet = await db.Wallets.FirstOrDefaultAsync(x => x.Id == input.WalletId, ct);
-            Pool? pool = await db.Pools.FirstOrDefaultAsync(x => x.Id == input.PoolId, ct);
 
-            if (miner == null || wallet == null || pool == null)
+            if (miner == null || wallet == null)
             {
-                return BadRequest($"Miner/wallet/pool not found");
+                return BadRequest($"Miner/wallet not found");
             }
 
             FlightSheet flightSheet = new()
@@ -48,7 +46,7 @@ namespace CryptonRemoteBack.Controllers
                 User = await db.Users.FirstAsync(x => x.Id == UserId.ToString(), ct),
                 Miner = miner,
                 Wallet = wallet,
-                Pool = pool
+                PoolAddress = input.PoolAddress
             };
 
             await db.FlightSheets.AddAsync(flightSheet, ct);
@@ -88,7 +86,6 @@ namespace CryptonRemoteBack.Controllers
             List<FlightSheet> flightSheets = await db.FlightSheets
                 .Include(x => x.User)
                 .Include(x => x.Miner)
-                .Include(x => x.Pool).ThenInclude(x => x.PoolAddresses)
                 .Include(x => x.Wallet).ThenInclude(x => x.Currency)
                 .Where(x => x.User.Id == UserId).ToListAsync(ct);
 
@@ -112,7 +109,6 @@ namespace CryptonRemoteBack.Controllers
             FlightSheet? flightSheet = await db.FlightSheets
                 .Include(x => x.User)
                 .Include(x => x.Miner)
-                .Include(x => x.Pool).ThenInclude(x => x.PoolAddresses)
                 .Include(x => x.Wallet).ThenInclude(x => x.Currency)
                 .FirstOrDefaultAsync(x => x.User.Id == UserId && x.Id == flightSheetId, ct);
 
@@ -144,19 +140,6 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/flight_sheets/pools_list")]
-        [Authorize]
-        public async Task<ActionResult<IEnumerable<PoolView>>> GetPools(
-            [FromServices] CryptonRemoteBackDbContext db,
-            CancellationToken ct)
-        {
-            List<PoolView> pools = await db.Pools
-                .Include(x => x.PoolAddresses)
-                .Select(x => new PoolView(x)).ToListAsync(ct);
-            return Ok(pools);
-        }
-
-
         [HttpGet("/flight_sheets/miners_list/{minerId:int}")]
         [Authorize]
         public async Task<ActionResult<MinerView>> GetMinerInfo(
@@ -184,7 +167,6 @@ namespace CryptonRemoteBack.Controllers
             FlightSheet? flightSheet = await db.FlightSheets
                 .Include(x => x.User)
                 .Include(x => x.Miner)
-                .Include(x => x.Pool).ThenInclude(x => x.PoolAddresses)
                 .Include(x => x.Wallet).ThenInclude(x => x.Currency)
                 .FirstOrDefaultAsync(x => x.User.Id == UserId && x.Id == flightSheetId, ct);
 
@@ -195,7 +177,6 @@ namespace CryptonRemoteBack.Controllers
 
             Miner? miner = await db.Miners.FirstOrDefaultAsync(x => x.Id == input.MinerId, ct);
             Wallet? wallet = await db.Wallets.FirstOrDefaultAsync(x => x.Id == input.WalletId, ct);
-            Pool? pool = await db.Pools.FirstOrDefaultAsync(x => x.Id == input.PoolId, ct);
 
             if (input.MinerId != null && miner != null)
             {
@@ -207,14 +188,14 @@ namespace CryptonRemoteBack.Controllers
                 flightSheet.Wallet = wallet;
             }
 
-            if (input.PoolId != null && pool != null)
-            {
-                flightSheet.Pool = pool;
-            }
-
             if (!string.IsNullOrWhiteSpace(input.Name))
             {
                 flightSheet.Name = input.Name;
+            }
+
+            if (!string.IsNullOrWhiteSpace(input.PoolAddress))
+            {
+                flightSheet.PoolAddress = input.PoolAddress;
             }
 
             if (!string.IsNullOrWhiteSpace(input.ExtendedConfig))

@@ -20,23 +20,18 @@ namespace CryptonRemoteBack.Controllers
         [HttpPost("/farms/add")]
         [Authorize]
         public async Task<ActionResult> AddFarm(
-            [FromForm] FarmFSModel input,
             [FromServices] CryptonRemoteBackDbContext db,
             CancellationToken ct)
         {
-            FlightSheet? fs = await db.FlightSheets
-                .FirstOrDefaultAsync(x => x.Id == input.ActiveFlightSheetId, ct);
-
             Farm farm = new()
             {
                 User = await db.Users.FirstAsync(x => x.Id == UserId.ToString(), ct),
-                LocalSystemID = GetRandomString(7),
-                ActiveFlightSheet = fs
+                LocalSystemID = GetRandomString(7)
             };
 
             await db.Farms.AddAsync(farm, ct);
             await db.SaveChangesAsync(ct);
-            return Ok(farm.Id);
+            return Ok(farm.LocalSystemID);
         }
 
         private static string GetRandomString(int length)

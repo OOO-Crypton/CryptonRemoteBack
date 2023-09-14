@@ -11,7 +11,7 @@ namespace CryptonRemoteBack.Model.Views
 
         public MinerView Miner { get; set; } = null!;
         public WalletView Wallet { get; set; } = null!;
-        public PoolView Pool { get; set; } = null!;
+        public string PoolAddress { get; set; } = null!;
         public UserView User { get; set; } = null!;
 
         public FlightSheetView(FlightSheet? input, bool isActive)
@@ -23,7 +23,7 @@ namespace CryptonRemoteBack.Model.Views
             IsActive = isActive;
             Miner = new MinerView(input.Miner);
             Wallet = new WalletView(input.Wallet);
-            Pool = new PoolView(input.Pool);
+            PoolAddress = input.PoolAddress;
             User = new UserView(input.User);
         }
     }

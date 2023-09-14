@@ -6,6 +6,6 @@
         public string ExtendedConfig { get; set; } = string.Empty;
         public int? MinerId { get; set; } = null;
         public int? WalletId { get; set; } = null;
-        public int? PoolId { get; set; } = null;
+        public string PoolAddress { get; set; } = string.Empty;
     }
 }

@@ -23,7 +23,7 @@ namespace CryptonRemoteBack.Domain
 
         public Miner Miner { get; set; } = null!;
         public Wallet Wallet { get; set; } = null!;
-        public Pool Pool { get; set; } = null!;
+        public string PoolAddress { get; set; } = string.Empty;
         public ApplicationUser User { get; set; } = null!;
     }
 }

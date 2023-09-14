@@ -11,8 +11,6 @@ namespace CryptonRemoteBack.Infrastructure
         public DbSet<Farm> Farms { get; set; } = null!;
         public DbSet<FlightSheet> FlightSheets { get; set; } = null!;
         public DbSet<Miner> Miners { get; set; } = null!;
-        public DbSet<Pool> Pools { get; set; } = null!;
-        public DbSet<PoolAddress> PoolAddresses { get; set; } = null!;
         public DbSet<Wallet> Wallets { get; set; } = null!;
 
         public CryptonRemoteBackDbContext(DbContextOptions<CryptonRemoteBackDbContext> options)
