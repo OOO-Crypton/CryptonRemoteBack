@@ -73,7 +73,8 @@ namespace CryptonRemoteBack.Controllers
         {
             List<Farm> farms = await db.Farms
                 .Include(x => x.User)
-                .Include(x => x.ActiveFlightSheet)
+                .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Miner)
+                .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Wallet)
                 .Where(x => x.User.Id == UserId).ToListAsync(ct);
 
             return Ok(farms.Select(x => new FarmView(x)));
@@ -89,7 +90,8 @@ namespace CryptonRemoteBack.Controllers
         {
             Farm? farm = await db.Farms
                 .Include(x => x.User)
-                .Include(x => x.ActiveFlightSheet)
+                .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Miner)
+                .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Wallet)
                 .FirstOrDefaultAsync(x => x.User.Id == UserId && x.Id == farmId, ct);
 
             if (farm == null)
