@@ -16,10 +16,10 @@ string? dbConnString = builder.Configuration
 builder.Services.AddNpgsqlDbContext<CryptonRemoteBackDbContext>(dbConnString);
 
 //parsing context
-//string? DataDbConnString = builder.Configuration
-//    .GetConnectionString("DataDbConnString")
-//    ?? "Server=localhost;Port=5432;Database=parser;User Id=postgres;Password=postgres;";
-//builder.Services.AddNpgsqlDbContext<DataParserDbContext>(dbConnString);
+string? DataDbConnString = builder.Configuration
+    .GetConnectionString("DataDbConnString")
+    ?? "Server=localhost;Port=5432;Database=CoinsDatabase;User Id=postgres;Password=postgres;";
+builder.Services.AddNpgsqlDbContext<DataParserDbContext>(DataDbConnString);
 
 #region Authorization
 
