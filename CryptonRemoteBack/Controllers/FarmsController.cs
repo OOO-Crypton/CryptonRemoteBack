@@ -1,6 +1,7 @@
 ﻿using CryptonRemoteBack.Domain;
 using CryptonRemoteBack.Extensions;
 using CryptonRemoteBack.Infrastructure;
+using CryptonRemoteBack.Model;
 using CryptonRemoteBack.Model.Models;
 using CryptonRemoteBack.Model.Views;
 using Microsoft.AspNetCore.Authorization;
@@ -100,6 +101,106 @@ namespace CryptonRemoteBack.Controllers
             }
 
             return Ok(new FarmView(farm));
+        }
+
+
+        [HttpGet("/farms/{farmId:int}/start")]
+        [Authorize]
+        public async Task<IActionResult> StartFarm(
+            [FromServices] CryptonRemoteBackDbContext db,
+            [FromRoute] int farmId,
+            CancellationToken ct)
+        {
+            Farm? farm = await db.Farms
+                .Include(x => x.User)
+                .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Miner)
+                .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Wallet)
+                .FirstOrDefaultAsync(x => x.User.Id == UserId && x.Id == farmId, ct);
+
+            if (farm == null)
+            {
+                return NotFound($"Farm {farmId} not found for current user");
+            }
+
+            if (farm.ActiveFlightSheet == null)
+            {
+                return NotFound($"Farm {farmId} has no active flight sheet");
+            }
+
+            if (await FarmsHelpers.StartFarm(farm.LocalSystemAddress,
+                                             farm.ActiveFlightSheet.Miner.Name,
+                                             farm.ActiveFlightSheet.PoolAddress,
+                                             farm.ActiveFlightSheet.Wallet.Address,
+                                             farm.ActiveFlightSheet.ExtendedConfig))
+            {
+                return Ok("Success");
+            }
+
+            return BadRequest("Failed");
+        }
+
+
+        [HttpGet("/farms/{farmId:int}/stop")]
+        [Authorize]
+        public async Task<IActionResult> StopFarm(
+            [FromServices] CryptonRemoteBackDbContext db,
+            [FromRoute] int farmId,
+            CancellationToken ct)
+        {
+            Farm? farm = await db.Farms
+                .Include(x => x.User)
+                .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Miner)
+                .FirstOrDefaultAsync(x => x.User.Id == UserId && x.Id == farmId, ct);
+
+            if (farm == null)
+            {
+                return NotFound($"Farm {farmId} not found for current user");
+            }
+
+            if (farm.ActiveFlightSheet == null)
+            {
+                return NotFound($"Farm {farmId} has no active flight sheet");
+            }
+
+            if (await FarmsHelpers.StopFarm(farm.LocalSystemAddress,
+                                            farm.ActiveFlightSheet.Miner.Name))
+            {
+                return Ok("Success");
+            }
+
+            return BadRequest("Failed");
+        }
+
+
+        [HttpGet("/farms/{farmId:int}/restart")]
+        [Authorize]
+        public async Task<IActionResult> RestartFarm(
+            [FromServices] CryptonRemoteBackDbContext db,
+            [FromRoute] int farmId,
+            CancellationToken ct)
+        {
+            Farm? farm = await db.Farms
+                .Include(x => x.User)
+                .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Miner)
+                .FirstOrDefaultAsync(x => x.User.Id == UserId && x.Id == farmId, ct);
+
+            if (farm == null)
+            {
+                return NotFound($"Farm {farmId} not found for current user");
+            }
+
+            if (farm.ActiveFlightSheet == null)
+            {
+                return NotFound($"Farm {farmId} has no active flight sheet");
+            }
+
+            if (await FarmsHelpers.RestartFarm(farm.LocalSystemAddress,
+                                               farm.ActiveFlightSheet.Miner.Name))
+            {
+                return Ok("Success");
+            }
+
+            return BadRequest("Failed");
         }
 
 

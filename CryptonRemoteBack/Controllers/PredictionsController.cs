@@ -2,6 +2,7 @@
 using CryptonRemoteBack.Domain.CoinsDatabase;
 using CryptonRemoteBack.Infrastructure;
 using CryptonRemoteBack.Model.Models;
+using CryptonRemoteBack.Model.Views;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,7 @@ namespace CryptonRemoteBack.Controllers
 
         [HttpGet("/predictions/get_prediction")]
         [Authorize]
-        public async Task<ActionResult<List<double>>> GetPrediction(
+        public async Task<ActionResult<List<PredictionView>>> GetPrediction(
             [FromQuery] PredictionModel input,
             [FromServices] CryptonRemoteBackDbContext db,
             [FromServices] DataParserDbContext db_data,
@@ -78,18 +79,12 @@ namespace CryptonRemoteBack.Controllers
                     }
 
                     // TODO куда хэш
-                    string result = "";
-
-                    //костыль для неправильной размерности
-                    double blockReward = lastMon.BlockReward + diffs[i].BlockReward;
-                    double digits = Math.Floor(Math.Log10(Math.Abs(blockReward)) + 1);
-                    blockReward /= 10.0 * (digits - 1);
-
+                    string script_result = "";
                     ProcessStartInfo start = new()
                     {
                         FileName = python_path,
                         Arguments = $"{predict_py_path} {currency.Name} " +
-                            $"{blockReward} " +
+                            $"{lastMon.BlockReward + diffs[i].BlockReward} " +
                             $"{lastMon.LastBlock + diffs[i].LastBlock} " +
                             $"{lastMon.Difficulty + diffs[i].Difficulty} " +
                             $"{lastMon.Nethash + diffs[i].Nethash} " +
@@ -104,14 +99,51 @@ namespace CryptonRemoteBack.Controllers
                     using (Process process = Process.Start(start)!)
                     {
                         using StreamReader reader = process.StandardOutput;
-                        result = reader.ReadToEnd();
+                        script_result = reader.ReadToEnd();
                     }
-                    if (double.TryParse(result.Trim().Replace("[", "").Replace("]", ""), out double res))
+                    if (double.TryParse(script_result.Trim().Replace("[", "").Replace("]", ""), out double res))
                         predictions.Add(res);
                     else predictions.Add(-2.0);
                 }
 
-                return Ok(predictions);
+                List<PredictionView> result = new();
+                for (int i = 0; i < predictions.Count; i++)
+                {
+                    result.Add(new(DateTime.Now.Date.AddDays(i + 1), predictions[i]));
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"{ex.Message}\n{ex.StackTrace}");
+            }
+        }
+
+
+        [HttpGet("/predictions/get_monitorings/{coinId:int}")]
+        [Authorize]
+        public async Task<ActionResult<List<MonitoringView>>> GetMonitorings(
+            [FromRoute] int coinId,
+            [FromServices] CryptonRemoteBackDbContext db,
+            [FromServices] DataParserDbContext db_data,
+            CancellationToken ct)
+        {
+            try
+            {
+                Currency? currency = await db.Currencies
+                    .FirstOrDefaultAsync(x => x.Id == coinId, ct);
+                if (currency == null)
+                {
+                    return BadRequest($"Currency with id = {coinId} not found");
+                }
+
+                List<Monitoring> mons = await db_data.Monitorings
+                    .Include(x => x.Coin)
+                    .Where(x => x.Coin.Name == currency.Name)
+                    .AsNoTracking().ToListAsync(ct);
+
+                return new List<MonitoringView>(mons.Select(x => new MonitoringView(x)));
             }
             catch (Exception ex)
             {
