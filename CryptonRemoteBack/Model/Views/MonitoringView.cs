@@ -15,6 +15,7 @@ namespace CryptonRemoteBack.Model.Views
         public double MarketCap { get; set; }
         public double PoolFee { get; set; }
         public double DailyEmission { get; set; }
+        public double Revenue { get; set; }
         public string Coin { get; set; }
 
         public MonitoringView(Monitoring input)
@@ -30,6 +31,7 @@ namespace CryptonRemoteBack.Model.Views
             MarketCap = input.MarketCap;
             PoolFee = input.PoolFee;
             DailyEmission = input.DailyEmission;
+            Revenue = input.Revenue;
             Coin = input.Coin.Name;
         }
     }
