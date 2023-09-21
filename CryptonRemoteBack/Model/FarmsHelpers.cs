@@ -46,26 +46,24 @@ namespace CryptonRemoteBack.Model
             }
             else return false;
         }
-    }
 
-    internal class StartMinerParams
-    {
-        public string walletName { get; set; }
-        public string poolAddress { get; set; }
-        public string additionalParams { get; set; }
-
-        public StartMinerParams(string walletName, string poolAddress, string additionalParams)
+        public static async Task<List<MinerMonitoringRecord>?> GetMonitorings(string ip)
         {
-            this.walletName = walletName;
-            this.poolAddress = poolAddress;
-            this.additionalParams = additionalParams;
+            string route = $"http://{ip}:5000/monitoring/list";
+            string? res = await RequestHelpers.GetMessageAsync(route);
+            if (res != null)
+            {
+                try
+                {
+                    List<MinerMonitoringRecord>? result = JsonConvert.DeserializeObject<List<MinerMonitoringRecord>>(res);
+                    return result;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+            else return null;
         }
-    }
-
-    internal class StartMinerReturn
-    {
-        public int exitCode { get; set; }
-        public string stdout { get; set; }
-        public string stderr { get; set; }
     }
 }

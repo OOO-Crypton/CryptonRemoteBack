@@ -204,6 +204,26 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        [HttpGet("/farms/{farmId:int}/get_monitorings")]
+        [Authorize]
+        public async Task<ActionResult<List<MinerMonitoringRecord>?>> GetFarmMonitorings(
+            [FromServices] CryptonRemoteBackDbContext db,
+            [FromRoute] int farmId,
+            CancellationToken ct)
+        {
+            Farm? farm = await db.Farms.Include(x => x.User)
+                .FirstOrDefaultAsync(x => x.User.Id == UserId && x.Id == farmId, ct);
+
+            if (farm == null)
+            {
+                return NotFound($"Farm {farmId} not found for current user");
+            }
+
+            List<MinerMonitoringRecord>? result = await FarmsHelpers.GetMonitorings(farm.LocalSystemAddress);
+            return result;
+        }
+
+
         [HttpPatch("/farms/{farmId:int}/switch_flight_sheet")]
         [Authorize]
         public async Task<ActionResult> SwitchFlightSheet(
