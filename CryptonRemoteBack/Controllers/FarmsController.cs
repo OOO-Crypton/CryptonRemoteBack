@@ -7,6 +7,7 @@ using CryptonRemoteBack.Model.Views;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net.WebSockets;
 
 namespace CryptonRemoteBack.Controllers
 {
@@ -224,6 +225,33 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        [HttpGet("/farms/get_all_farms_monitorings")]
+        [Authorize]
+        public async Task<ActionResult<List<FarmMonitoringView>>> GetAllFarmsMonitorings(
+            [FromServices] CryptonRemoteBackDbContext db,
+            CancellationToken ct)
+        {
+            List<Farm> farms = await db.Farms
+                .Include(x => x.User)
+                .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Miner)
+                .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Wallet)
+                .Where(x => x.User.Id == UserId).AsNoTracking().ToListAsync(ct);
+
+            if (farms == null || farms.Count == 0)
+            {
+                return NotFound($"Farms not found for current user");
+            }
+
+            List<FarmMonitoringView> result = new();
+            foreach (Farm farm in farms)
+            {
+                result.Add(new(farm, await FarmsHelpers.GetMonitorings(farm.LocalSystemAddress)));
+            }
+            
+            return result;
+        }
+
+
         [HttpPatch("/farms/{farmId:int}/switch_flight_sheet")]
         [Authorize]
         public async Task<ActionResult> SwitchFlightSheet(
@@ -294,6 +322,30 @@ namespace CryptonRemoteBack.Controllers
             farm.SystemInfo = input.SystemInfo;
             await db.SaveChangesAsync(ct);
             return Ok(farm.Id);
+        }
+
+
+        [HttpGet("/farms/stats")]
+        [Authorize]
+        public async Task GetStats([FromServices] CryptonRemoteBackDbContext db, CancellationToken ct)
+        {
+            if (HttpContext.WebSockets.IsWebSocketRequest)
+            {
+                List<Farm> farms = await db.Farms.Include(x => x.User)
+                    .Where(x => x.User.Id == UserId).AsNoTracking().ToListAsync(ct);
+
+                if (farms == null || farms.Count == 0)
+                {
+                    HttpContext.Response.StatusCode = 404;
+                    return;
+                }
+                using WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                await FarmsHelpers.GetStats(webSocket, farms.Select(x => (x.Id, x.LocalSystemAddress)).ToList());
+            }
+            else
+            {
+                HttpContext.Response.StatusCode = 400;
+            }
         }
     }
 }
