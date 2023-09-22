@@ -129,7 +129,7 @@ namespace CryptonRemoteBack.Controllers
             }
 
             if (await FarmsHelpers.StartFarm(farm.LocalSystemAddress,
-                                             farm.ActiveFlightSheet.Miner.Name,
+                                             farm.ActiveFlightSheet.Miner.ContainerName,
                                              farm.ActiveFlightSheet.PoolAddress,
                                              farm.ActiveFlightSheet.Wallet.Address,
                                              farm.ActiveFlightSheet.ExtendedConfig))
@@ -164,7 +164,7 @@ namespace CryptonRemoteBack.Controllers
             }
 
             if (await FarmsHelpers.StopFarm(farm.LocalSystemAddress,
-                                            farm.ActiveFlightSheet.Miner.Name))
+                                            farm.ActiveFlightSheet.Miner.ContainerName))
             {
                 return Ok("Success");
             }
@@ -196,7 +196,7 @@ namespace CryptonRemoteBack.Controllers
             }
 
             if (await FarmsHelpers.RestartFarm(farm.LocalSystemAddress,
-                                               farm.ActiveFlightSheet.Miner.Name))
+                                               farm.ActiveFlightSheet.Miner.ContainerName))
             {
                 return Ok("Success");
             }

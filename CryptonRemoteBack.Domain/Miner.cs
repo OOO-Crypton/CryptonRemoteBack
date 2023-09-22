@@ -15,6 +15,11 @@ namespace CryptonRemoteBack.Domain
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
+        /// Название контейнера в локальной системе
+        /// </summary>
+        public string ContainerName { get; set; } = string.Empty;
+
+        /// <summary>
         /// Путь к файлу конфигурации
         /// </summary>
         public string MinerInfo { get; set; } = string.Empty;
