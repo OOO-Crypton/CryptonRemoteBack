@@ -12,6 +12,7 @@ using System.Net.WebSockets;
 namespace CryptonRemoteBack.Controllers
 {
     [ApiController]
+    [Route("[controller]")]
     public class FarmsController : ControllerBase
     {
         private string UserId => User.GetUserId();
@@ -23,11 +24,13 @@ namespace CryptonRemoteBack.Controllers
         [Authorize]
         public async Task<ActionResult> AddFarm(
             [FromServices] CryptonRemoteBackDbContext db,
+            [FromBody] FarmAddModel input,
             CancellationToken ct)
         {
             Farm farm = new()
             {
                 User = await db.Users.FirstAsync(x => x.Id == UserId.ToString(), ct),
+                Name = input.Name,
                 LocalSystemID = GetRandomString(7)
             };
 
@@ -331,16 +334,17 @@ namespace CryptonRemoteBack.Controllers
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
-                List<Farm> farms = await db.Farms.Include(x => x.User)
-                    .Where(x => x.User.Id == UserId).AsNoTracking().ToListAsync(ct);
+                //List<Farm> farms = await db.Farms.Include(x => x.User)
+                //    .Where(x => x.User.Id == UserId).AsNoTracking().ToListAsync(ct);
 
-                if (farms == null || farms.Count == 0)
-                {
-                    HttpContext.Response.StatusCode = 404;
-                    return;
-                }
+                //if (farms == null || farms.Count == 0)
+                //{
+                //    HttpContext.Response.StatusCode = 404;
+                //    return;
+                //}
                 using WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                await FarmsHelpers.GetStats(webSocket, farms.Select(x => (x.Id, x.LocalSystemAddress)).ToList());
+                //await FarmsHelpers.GetStats(webSocket, farms.Select(x => (x.Id, x.LocalSystemAddress)).ToList());
+                await FarmsHelpers.GetStats(webSocket, null);
             }
             else
             {

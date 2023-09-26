@@ -88,6 +88,7 @@ builder.Services.AddSingleton<IConfiguration>(configuration); ;
 builder.Services.AddCors();
 
 var app = builder.Build();
+app.UseWebSockets();
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 //if (app.Environment.IsDevelopment())
@@ -107,7 +108,6 @@ app.UseCors(x => x
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseWebSockets();
 app.MapControllers();
 app.RunDatabaseMigrations();
 app.Run();

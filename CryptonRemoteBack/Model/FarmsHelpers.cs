@@ -74,38 +74,40 @@ namespace CryptonRemoteBack.Model
         {
             byte[] mainBuf = new byte[1024 * 4];
             WebSocketReceiveResult result = await webSocket
-                .ReceiveAsync(new ArraySegment<byte>(mainBuf),CancellationToken.None);
+                .ReceiveAsync(new ArraySegment<byte>(mainBuf),
+                              CancellationToken.None);
 
             while (!result.CloseStatus.HasValue)
             {
                 List<FarmStatView> stats = new();
-                foreach ((int farmId, string farmIp) in farms)
-                {
-                    string route = $"http://{farmIp}:5000/???"; //TODO
-                    FarmStatView? stat;
-                    try
-                    {
-                        var buffer = new byte[1024 * 4];
-                        ClientWebSocket clientWebSocket = new();
-                        await clientWebSocket.ConnectAsync(new Uri(route), CancellationToken.None);
-                        _ = await clientWebSocket.ReceiveAsync(buffer, CancellationToken.None);
+                //foreach ((int farmId, string farmIp) in farms)
+                //{
+                //    string route = $"wss://{farmIp}:44444";
+                //    FarmStatView? stat;
+                //    try
+                //    {
+                //        var buffer = new byte[1024 * 4];
+                //        ClientWebSocket clientWebSocket = new();
+                //        await clientWebSocket.ConnectAsync(new Uri(route), CancellationToken.None);
+                //        _ = await clientWebSocket.ReceiveAsync(buffer, CancellationToken.None);
 
-                        string json = Encoding.UTF8.GetString(buffer);
-                        await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure,
-                                                         null,
-                                                         CancellationToken.None);
+                //        string json = Encoding.UTF8.GetString(buffer);
+                //        await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure,
+                //                                         null,
+                //                                         CancellationToken.None);
 
-                        MinerMonitoringRecord? monitoring = JsonConvert.DeserializeObject<MinerMonitoringRecord>(json);
-                        stat = new(farmId, monitoring);
-                    }
-                    catch
-                    {
-                        stat = new(farmId, null);
-                    }
-                    stats.Add(stat);
-                }
+                //        MinerMonitoringRecord? monitoring = JsonConvert.DeserializeObject<MinerMonitoringRecord>(json);
+                //        stat = new(farmId, monitoring);
+                //    }
+                //    catch
+                //    {
+                //        stat = new(farmId, null);
+                //    }
+                //    stats.Add(stat);
+                //}
 
-                byte[] message = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(stats));
+                //byte[] message = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(stats));
+                byte[] message = Encoding.UTF8.GetBytes(DateTime.Now.ToString());
                 await webSocket.SendAsync(new ArraySegment<byte>(message, 0, message.Length),
                                           WebSocketMessageType.Text,
                                           true,
@@ -114,7 +116,9 @@ namespace CryptonRemoteBack.Model
                 result = await webSocket
                     .ReceiveAsync(new ArraySegment<byte>(mainBuf), CancellationToken.None);
             }
-            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+            await webSocket.CloseAsync(result.CloseStatus.Value,
+                                       result.CloseStatusDescription,
+                                       CancellationToken.None);
         }
     }
 }

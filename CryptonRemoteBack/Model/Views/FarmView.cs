@@ -5,6 +5,7 @@ namespace CryptonRemoteBack.Model.Views
     public class FarmView
     {
         public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
         public string SystemInfo { get; set; } = string.Empty;
         public string LocalSystemAddress { get; set; } = string.Empty;
         public string LocalSystemID { get; set; } = string.Empty;
@@ -15,6 +16,7 @@ namespace CryptonRemoteBack.Model.Views
         public FarmView(Farm farm)
         {
             Id = farm.Id;
+            Name = farm.Name;
             SystemInfo = farm.SystemInfo;
             LocalSystemID = farm.LocalSystemID;
             LocalSystemAddress = farm.LocalSystemAddress;
