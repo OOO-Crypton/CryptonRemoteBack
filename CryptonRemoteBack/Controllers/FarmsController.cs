@@ -329,7 +329,7 @@ namespace CryptonRemoteBack.Controllers
 
 
         [HttpGet("/farms/stats")]
-        [Authorize]
+        //[Authorize]
         public async Task GetStats([FromServices] CryptonRemoteBackDbContext db, CancellationToken ct)
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)
