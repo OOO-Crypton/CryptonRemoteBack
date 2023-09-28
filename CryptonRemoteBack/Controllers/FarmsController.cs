@@ -7,7 +7,9 @@ using CryptonRemoteBack.Model.Views;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Sockets;
 using System.Net.WebSockets;
+using System.Text;
 
 namespace CryptonRemoteBack.Controllers
 {
@@ -336,15 +338,16 @@ namespace CryptonRemoteBack.Controllers
             {
                 //List<Farm> farms = await db.Farms.Include(x => x.User)
                 //    .Where(x => x.User.Id == UserId).AsNoTracking().ToListAsync(ct);
+                List<Farm> farms = await db.Farms.Include(x => x.User)
+                    .Where(x => x.User.Email == "a.rotov2001@mail.ru").AsNoTracking().ToListAsync(ct); //temp
 
-                //if (farms == null || farms.Count == 0)
-                //{
-                //    HttpContext.Response.StatusCode = 404;
-                //    return;
-                //}
+                if (farms == null || farms.Count == 0)
+                {
+                    HttpContext.Response.StatusCode = 404;
+                    return;
+                }
                 using WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                //await FarmsHelpers.GetStats(webSocket, farms.Select(x => (x.Id, x.LocalSystemAddress)).ToList());
-                await FarmsHelpers.GetStats(webSocket, null);
+                await FarmsHelpers.GetStats(webSocket, farms.Select(x => (x.Id, x.LocalSystemAddress)).ToList());
             }
             else
             {

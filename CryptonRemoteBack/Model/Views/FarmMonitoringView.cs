@@ -16,9 +16,9 @@ namespace CryptonRemoteBack.Model.Views
     public class FarmStatView
     {
         public int Farm { get; set; }
-        public MinerMonitoringRecord? Stat { get; set; }
+        public MinerMonitoringRecordNoCard? Stat { get; set; }
 
-        public FarmStatView(int farmId, MinerMonitoringRecord? stat)
+        public FarmStatView(int farmId, MinerMonitoringRecordNoCard? stat)
         {
             Farm = farmId;
             Stat = stat ?? null;
