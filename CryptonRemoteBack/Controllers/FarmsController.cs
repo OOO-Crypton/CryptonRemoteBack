@@ -7,6 +7,7 @@ using CryptonRemoteBack.Model.Views;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
@@ -331,23 +332,45 @@ namespace CryptonRemoteBack.Controllers
 
 
         [HttpGet("/farms/stats")]
-        //[Authorize]
-        public async Task GetStats([FromServices] CryptonRemoteBackDbContext db, CancellationToken ct)
+        public async Task GetStats([FromServices] CryptonRemoteBackDbContext db,
+                                   [FromQuery] string token,
+                                   CancellationToken ct)
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
-                //List<Farm> farms = await db.Farms.Include(x => x.User)
-                //    .Where(x => x.User.Id == UserId).AsNoTracking().ToListAsync(ct);
+                string? id;
+                try
+                {
+                    JwtSecurityTokenHandler handler = new();
+                    JwtSecurityToken? jwt_token = handler.ReadToken(token) as JwtSecurityToken;
+                    id = jwt_token?.Claims.First(claim => claim.Type == "UserId").Value;
+                }
+                catch
+                {
+                    HttpContext.Response.StatusCode = 404;
+                    return;
+                }
+
+                if (id == null)
+                {
+                    HttpContext.Response.StatusCode = 404;
+                    return;
+                }
+
                 List<Farm> farms = await db.Farms.Include(x => x.User)
-                    .Where(x => x.User.Email == "a.rotov2001@mail.ru").AsNoTracking().ToListAsync(ct); //temp
+                    .Where(x => x.User.Id == id).AsNoTracking().ToListAsync(ct);
+                //List<Farm> farms = await db.Farms.Include(x => x.User)
+                //    .Where(x => x.User.Email == "a.rotov2001@mail.ru").AsNoTracking().ToListAsync(ct); //temp
 
                 if (farms == null || farms.Count == 0)
                 {
                     HttpContext.Response.StatusCode = 404;
                     return;
                 }
+
                 using WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
                 await FarmsHelpers.GetStats(webSocket, farms.Select(x => (x.Id, x.LocalSystemAddress)).ToList());
+                //await FarmsHelpers.GetStats(webSocket, null);
             }
             else
             {

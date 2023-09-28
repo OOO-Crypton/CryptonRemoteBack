@@ -83,7 +83,7 @@ namespace CryptonRemoteBack.Model
                     {
                         using TcpClient tcpClient = new();
                         await tcpClient.ConnectAsync(farmIp, 44444);
-                        NetworkStream stream = tcpClient.GetStream();
+                        using NetworkStream stream = tcpClient.GetStream();
                         byte[] result = new byte[2048];
                         await stream.ReadAsync(result);
 
@@ -99,12 +99,12 @@ namespace CryptonRemoteBack.Model
                 }
 
                 byte[] message = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(stats));
-                //byte[] message = Encoding.UTF8.GetBytes(DateTime.Now.ToString());
+                //byte[] message = Encoding.UTF8.GetBytes(DateTime.Now.ToString()); //temp
                 await webSocket.SendAsync(new ArraySegment<byte>(message, 0, message.Length),
                                           WebSocketMessageType.Text,
                                           true,
                                           CancellationToken.None);
-                Thread.Sleep(2000);
+                Thread.Sleep(1000);
             }
             await webSocket.CloseAsync(webSocket.CloseStatus.Value,
                                        webSocket.CloseStatusDescription,
