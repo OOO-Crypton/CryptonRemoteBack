@@ -13,15 +13,18 @@ namespace CryptonRemoteBack.Controllers
     [ApiController]
     public class PredictionsController : ControllerBase
     {
-        private readonly string python_path;
-        private readonly string predict_py_path;
+        private readonly string? python_path;
+        private readonly string? predict_py_path;
 
         public PredictionsController(IConfiguration config)
         {
-            python_path = config["PythonPath"]
-                ?? "C:\\Users\\kseny\\AppData\\Local\\Programs\\Python\\Python311\\python.exe";
-            predict_py_path = config["PredictPyPath"]
-                ?? "D:\\osiris\\Crypton\\Crypton_Python\\MLCrypton\\predict.py";
+            python_path = config["PythonPath"];
+            predict_py_path = config["PredictPyPath"];
+
+            if (string.IsNullOrWhiteSpace(python_path))
+                python_path = "C:\\Users\\kseny\\AppData\\Local\\Programs\\Python\\Python311\\python.exe";
+            if (string.IsNullOrWhiteSpace(predict_py_path))
+                predict_py_path = "D:\\osiris\\Crypton\\Crypton_Python\\MLCrypton\\predict.py";
         }
 
 
@@ -43,10 +46,20 @@ namespace CryptonRemoteBack.Controllers
                 }
 
                 List<double> predictions = new();
-                //List<Monitoring> previousWeekMons = new();
+
+                double hash;
+                if (input.HashRate >= 100.0 && input.HashRate <= 9950.0)
+                {
+                    for (hash = 100.0; hash <= 9950.0; hash += 50.0)
+                        if (Math.Abs(hash - input.HashRate) <= 25.0) break;
+                }
+                else hash = input.HashRate < 100.0 ? 100.0 : 9950.0;
+
                 List<Monitoring> previousWeekMons = await db_data.Monitorings
                     .Include(x => x.Coin)
-                    .Where(x => x.Coin.Name == currency.Name && x.Date >= DateTime.UtcNow.AddDays(-7))
+                    .Where(x => x.Coin.Name == currency.Name
+                                && x.Date >= DateTime.UtcNow.AddDays(-7)
+                                && x.Hashrate == hash)
                     .AsNoTracking().ToListAsync(ct);
 
                 if (previousWeekMons == null || !previousWeekMons.Any())
@@ -78,7 +91,6 @@ namespace CryptonRemoteBack.Controllers
                         continue;
                     }
 
-                    // TODO куда хэш
                     string script_result = "";
                     ProcessStartInfo start = new()
                     {
@@ -92,7 +104,7 @@ namespace CryptonRemoteBack.Controllers
                             $"{lastMon.ExchangeRateVol + diffs[i].ExchangeRateVol} " +
                             $"{lastMon.MarketCap + diffs[i].MarketCap} " +
                             $"{lastMon.PoolFee + diffs[i].PoolFee} " +
-                            $"{lastMon.DailyEmission + diffs[i].DailyEmission}",
+                            $"{input.HashRate}",
                         UseShellExecute = false,
                         RedirectStandardOutput = true
                     };
@@ -103,7 +115,7 @@ namespace CryptonRemoteBack.Controllers
                     }
                     if (double.TryParse(script_result.Trim().Replace("[", "").Replace("]", ""), out double res))
                         predictions.Add(res);
-                    else predictions.Add(-2.0);
+                    else predictions.Add(double.NaN);
                 }
 
                 List<PredictionView> result = new();
@@ -121,10 +133,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/predictions/get_monitorings/{coinId:int}")]
+        [HttpGet("/predictions/get_monitorings/{coinId:int}/{hashrate:double}")]
         [Authorize]
         public async Task<ActionResult<List<MonitoringView>>> GetMonitorings(
             [FromRoute] int coinId,
+            [FromRoute] double hashrate,
             [FromServices] CryptonRemoteBackDbContext db,
             [FromServices] DataParserDbContext db_data,
             CancellationToken ct)
@@ -140,7 +153,7 @@ namespace CryptonRemoteBack.Controllers
 
                 List<Monitoring> mons = await db_data.Monitorings
                     .Include(x => x.Coin)
-                    .Where(x => x.Coin.Name == currency.Name)
+                    .Where(x => x.Coin.Name == currency.Name && (hashrate > 0.0 ? x.Hashrate == hashrate : true))
                     .AsNoTracking().ToListAsync(ct);
 
                 return new List<MonitoringView>(mons.Select(x => new MonitoringView(x)));
@@ -162,7 +175,6 @@ namespace CryptonRemoteBack.Controllers
         public double ExchangeRateVol { get; set; }
         public double MarketCap { get; set; }
         public double PoolFee { get; set; }
-        public double DailyEmission { get; set; }
 
         public ParamsDiff(Monitoring first, Monitoring second)
         {
@@ -174,7 +186,6 @@ namespace CryptonRemoteBack.Controllers
             ExchangeRateVol = second.ExchangeRateVol - first.ExchangeRateVol;
             MarketCap = second.MarketCap - first.MarketCap;
             PoolFee = second.PoolFee - first.PoolFee;
-            DailyEmission = second.DailyEmission - first.DailyEmission;
         }
     }
 }

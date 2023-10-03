@@ -14,7 +14,7 @@ namespace CryptonRemoteBack.Model.Views
         public double ExchangeRateVol { get; set; }
         public double MarketCap { get; set; }
         public double PoolFee { get; set; }
-        public double DailyEmission { get; set; }
+        public double Hashrate { get; set; }
         public double Revenue { get; set; }
         public string Coin { get; set; }
 
@@ -30,7 +30,7 @@ namespace CryptonRemoteBack.Model.Views
             ExchangeRateVol = input.ExchangeRateVol;
             MarketCap = input.MarketCap;
             PoolFee = input.PoolFee;
-            DailyEmission = input.DailyEmission;
+            Hashrate = input.Hashrate;
             Revenue = input.Revenue;
             Coin = input.Coin.Name;
         }

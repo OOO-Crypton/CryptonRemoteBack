@@ -40,18 +40,7 @@ namespace CryptonRemoteBack.Domain.CoinsDatabase
         public double BtcRevenue { get; set; }
 
         public double Revenue { get; set; }
-        public double Cost { get; set; }
-        public double Profit { get; set; }
-
-        /// <summary>
-        /// Всего в обращении монет
-        /// </summary>
-        [NotMapped] public double TotalCoinsCount { get; set; }
-
-        /// <summary>
-        /// Объем торгов за 24 часа
-        /// </summary>
-        public double DailyEmission { get; set; }
+        public double Hashrate { get; set; }
 
         /// <summary>
         /// Связанная монета
