@@ -71,44 +71,39 @@ namespace CryptonRemoteBack.Model
         }
 
 
-        public async static Task GetStats(WebSocket webSocket, List<(int farmId, string farmIp)> farms)
+        public async static Task GetStats(WebSocket webSocket, List<(int farmId, int fsId, string farmIp)> farms)
         {
-            while (!webSocket.CloseStatus.HasValue)
+            List<FarmStatView> stats = new();
+            foreach ((int farmId, int fsId, string farmIp) in farms)
             {
-                List<FarmStatView> stats = new();
-                foreach ((int farmId, string farmIp) in farms)
+                FarmStatView? stat;
+                try
                 {
-                    FarmStatView? stat;
-                    try
-                    {
-                        using TcpClient tcpClient = new();
-                        await tcpClient.ConnectAsync(farmIp, 44444);
-                        using NetworkStream stream = tcpClient.GetStream();
-                        byte[] result = new byte[2048];
-                        await stream.ReadAsync(result);
+                    using TcpClient tcpClient = new();
+                    await tcpClient.ConnectAsync(farmIp, 44444);
+                    using NetworkStream stream = tcpClient.GetStream();
+                    byte[] result = new byte[2048];
+                    await stream.ReadAsync(result);
 
-                        MinerMonitoringRecordNoCard? monitoring = JsonConvert
-                            .DeserializeObject<MinerMonitoringRecordNoCard>(Encoding.UTF8.GetString(result));
-                        stat = new(farmId, monitoring);
-                    }
-                    catch
-                    {
-                        stat = new(farmId, null);
-                    }
-                    stats.Add(stat);
+                    MinerMonitoringRecordNoCard? monitoring = JsonConvert
+                        .DeserializeObject<MinerMonitoringRecordNoCard>(Encoding.UTF8.GetString(result));
+                    stat = new(farmId, fsId, monitoring, "OK");
                 }
+                catch (Exception ex)
+                {
+                    stat = new(farmId, fsId, null, $"Failed to connect: {ex.Message}");
+                }
+                stats.Add(stat);
+            }
 
+            if (stats.Any())
+            {
                 byte[] message = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(stats));
-                //byte[] message = Encoding.UTF8.GetBytes(DateTime.Now.ToString()); //temp
                 await webSocket.SendAsync(new ArraySegment<byte>(message, 0, message.Length),
                                           WebSocketMessageType.Text,
                                           true,
                                           CancellationToken.None);
-                Thread.Sleep(1000);
             }
-            await webSocket.CloseAsync(webSocket.CloseStatus.Value,
-                                       webSocket.CloseStatusDescription,
-                                       CancellationToken.None);
         }
     }
 }

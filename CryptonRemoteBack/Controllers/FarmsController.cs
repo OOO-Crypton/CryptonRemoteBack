@@ -7,8 +7,8 @@ using CryptonRemoteBack.Model.Views;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 
@@ -19,8 +19,12 @@ namespace CryptonRemoteBack.Controllers
     public class FarmsController : ControllerBase
     {
         private string UserId => User.GetUserId();
+        private readonly IConfiguration _configuration;
 
-        public FarmsController() { }
+        public FarmsController(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
 
         [HttpPost("/farms/add")]
@@ -338,39 +342,61 @@ namespace CryptonRemoteBack.Controllers
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
+                using WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+
                 string? id;
                 try
                 {
+                    TokenValidationParameters? tokenValParams = new()
+                    {
+                        ValidateAudience = false,
+                        ValidateIssuer = false,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
+                            .GetBytes(_configuration["JWT:Secret"]))
+                    };
                     JwtSecurityTokenHandler handler = new();
-                    JwtSecurityToken? jwt_token = handler.ReadToken(token) as JwtSecurityToken;
+                    handler.ValidateToken(token, tokenValParams, out SecurityToken securityToken);
+                    JwtSecurityToken? jwt_token = securityToken as JwtSecurityToken;
                     id = jwt_token?.Claims.First(claim => claim.Type == "UserId").Value;
+                    if (id == null) throw new Exception();
                 }
                 catch
                 {
-                    HttpContext.Response.StatusCode = 404;
+                    byte[] message = Encoding.UTF8.GetBytes("invalid token");
+                    await webSocket.SendAsync(new ArraySegment<byte>(message, 0, message.Length),
+                                              WebSocketMessageType.Text,
+                                              true,
+                                              CancellationToken.None);
+                    await webSocket.CloseAsync(webSocket.CloseStatus.Value,
+                                       webSocket.CloseStatusDescription,
+                                       CancellationToken.None);
+                    HttpContext.Response.StatusCode = 401;
                     return;
                 }
 
-                if (id == null)
+                while (!webSocket.CloseStatus.HasValue)
                 {
-                    HttpContext.Response.StatusCode = 404;
-                    return;
+                    Thread.Sleep(1000);
+                    List<Farm> farms = await db.Farms
+                        .Include(x => x.User)
+                        .Include(x => x.ActiveFlightSheet)
+                        .Where(x => x.User.Id == id).AsNoTracking().ToListAsync(ct);
+
+                    if (farms == null || farms.Count == 0)
+                    {
+                        byte[] message = Encoding.UTF8.GetBytes("no farms");
+                        await webSocket.SendAsync(new ArraySegment<byte>(message, 0, message.Length),
+                                                  WebSocketMessageType.Text,
+                                                  true,
+                                                  CancellationToken.None);
+                    }
+                    await FarmsHelpers.GetStats(webSocket,
+                        farms.Select(x => (x.Id, x.ActiveFlightSheet?.Id ?? 0, x.LocalSystemAddress)).ToList());
                 }
-
-                List<Farm> farms = await db.Farms.Include(x => x.User)
-                    .Where(x => x.User.Id == id).AsNoTracking().ToListAsync(ct);
-                //List<Farm> farms = await db.Farms.Include(x => x.User)
-                //    .Where(x => x.User.Email == "a.rotov2001@mail.ru").AsNoTracking().ToListAsync(ct); //temp
-
-                if (farms == null || farms.Count == 0)
-                {
-                    HttpContext.Response.StatusCode = 404;
-                    return;
-                }
-
-                using WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                await FarmsHelpers.GetStats(webSocket, farms.Select(x => (x.Id, x.LocalSystemAddress)).ToList());
-                //await FarmsHelpers.GetStats(webSocket, null);
+                await webSocket.CloseAsync(webSocket.CloseStatus.Value,
+                                           webSocket.CloseStatusDescription,
+                                           CancellationToken.None);
             }
             else
             {

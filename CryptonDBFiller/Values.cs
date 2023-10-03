@@ -342,12 +342,12 @@
             "Zetacoin",
         };
 
-        internal static List<(string name, string readme)> miners = new()
+        internal static List<(string name, string readme, string container)> miners = new()
         {
-            ("PhoenixMiner", "phoenix miner info"),
-            ("TeamRedMiner", "teamred miner info"),
-            ("GMiner", "gminer info"),
-            ("XMRig", "xmrig miner info")
+            ("PhoenixMiner", "phoenix miner info", "myphoenix"),
+            ("TeamRedMiner", "teamred miner info", "myteamred"),
+            ("GMiner", "gminer info", "mygminer"),
+            ("XMRig", "xmrig miner info", "myxmrig")
         };
     }
 }

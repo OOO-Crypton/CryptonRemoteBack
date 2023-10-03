@@ -6,7 +6,7 @@ using Npgsql;
 
 Console.WriteLine("Starting...");
 
-NpgsqlConnectionStringBuilder builder = new("Server=localhost;Port=5432;Database=cryptondb;User Id=cryptonuser;Password=cryptonpass;");
+NpgsqlConnectionStringBuilder builder = new("Server=localhost;Port=5432;Database=cryptondb;User Id=crypton_user;Password=crypton_pass;");
 //NpgsqlConnectionStringBuilder builder = new("Server=localhost;Port=5432;Database=cryptondatabase;User Id=postgres;Password=postgres;");
 DbContextOptionsBuilder<CryptonRemoteBackDbContext> optionsBuilder = new();
 
@@ -31,11 +31,12 @@ if (!db.Currencies.Any())
 if (!db.Miners.Any())
 {
     Console.WriteLine("Add miners...");
-    foreach ((string name, string readme) in Values.miners)
+    foreach ((string name, string readme, string container) in Values.miners)
     {
         Miner miner = new()
         {
             Name = name,
+            ContainerName = container,
             MinerInfo = readme
         };
         db.Miners.Add(miner);
