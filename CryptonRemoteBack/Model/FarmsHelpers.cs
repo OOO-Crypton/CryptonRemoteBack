@@ -82,7 +82,7 @@ namespace CryptonRemoteBack.Model
                     using TcpClient tcpClient = new();
                     await tcpClient.ConnectAsync(farmIp, 44444);
                     using NetworkStream stream = tcpClient.GetStream();
-                    byte[] result = new byte[2048];
+                    byte[] result = new byte[2048 * 10];
                     await stream.ReadAsync(result);
 
                     MinerMonitoringRecordNoCard? monitoring = JsonConvert
