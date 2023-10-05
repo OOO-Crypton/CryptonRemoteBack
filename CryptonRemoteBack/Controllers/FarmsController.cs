@@ -375,9 +375,8 @@ namespace CryptonRemoteBack.Controllers
                 }
 
                 byte[] buffer = new byte[1024 * 4];
-                WebSocketReceiveResult result = await webSocket
-                    .ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                while (!result.CloseStatus.HasValue)
+                var task = webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), ct);
+                while (!task.IsCompleted)
                 {
                     List<Farm> farms = await db.Farms
                         .Include(x => x.User)
@@ -393,12 +392,12 @@ namespace CryptonRemoteBack.Controllers
                                                   CancellationToken.None);
                     }
 
-                    await FarmsHelpers.GetStats(webSocket,
-                        farms.Select(x => (x.Id, x.ActiveFlightSheet?.Id ?? 0, x.LocalSystemAddress)).ToList());
+                    await FarmsHelpers.GetStats(webSocket, farms
+                        .Select(x => (x.Id,
+                                     (x.ActiveFlightSheet != null) ? x.ActiveFlightSheet.Id : 0,
+                                     x.LocalSystemAddress)).ToList());
                     //await FarmsHelpers.GetStats(webSocket, new List<(int, int, string)>() {(0, 0, "192.168.0.244") });
-                    buffer = new byte[1024 * 4];
-                    result = await webSocket
-                        .ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                    Thread.Sleep(1000);
                 }
                 await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure,
                                            "ended",
