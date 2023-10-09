@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-CryptonRemoteBack-1462bfdf-0d1c-4545-9709-25ec37354ac6</UserSecretsId>
     <OutputType>Exe</OutputType>
+    <EnableSdkContainerSupport>true</EnableSdkContainerSupport>
   </PropertyGroup>
 
   <ItemGroup>

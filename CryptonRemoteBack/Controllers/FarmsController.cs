@@ -392,11 +392,10 @@ namespace CryptonRemoteBack.Controllers
                                                   CancellationToken.None);
                     }
 
-                    await FarmsHelpers.GetStats(webSocket, farms
-                        .Select(x => (x.Id,
-                                     (x.ActiveFlightSheet != null) ? x.ActiveFlightSheet.Id : 0,
-                                     x.LocalSystemAddress)).ToList());
-                    //await FarmsHelpers.GetStats(webSocket, new List<(int, int, string)>() {(0, 0, "192.168.0.244") });
+                    await FarmsHelpers.GetStats(webSocket,
+                        farms.Select(x => (x.Id,
+                                           x.ActiveFlightSheet != null ? x.ActiveFlightSheet.Id : 0,
+                                           x.LocalSystemAddress)).ToList());
                     Thread.Sleep(1000);
                 }
                 await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure,
