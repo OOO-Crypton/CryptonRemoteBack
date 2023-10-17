@@ -45,7 +45,7 @@ namespace CryptonRemoteBack.Controllers
                     return BadRequest($"Currency with id = {input.CurrencyId} not found");
                 }
 
-                List<double> predictions = new();
+                List<PredictionView> predictions = new();
 
                 double hash;
                 if (input.HashRate >= 100.0 && input.HashRate <= 9950.0)
@@ -64,8 +64,6 @@ namespace CryptonRemoteBack.Controllers
 
                 if (previousWeekMons == null || !previousWeekMons.Any())
                 {
-                    //если недостаточно предыдущих наблюдений - возвращаем нули
-                    predictions.AddRange(new List<double>() { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 });
                     return Ok(predictions);
                 }
 
@@ -83,19 +81,16 @@ namespace CryptonRemoteBack.Controllers
                 }
                 diffs.Add(0, new(firstMon, lastMon));
 
+                int days = 1;
                 for (int i = -6; i <= 0; i++)
                 {
                     if (diffs[i] == null)
                     {
-                        predictions.Add(-1.0);
+                        predictions.Add(new(DateTime.Now.Date.AddDays(days), -1.0, ""));
                         continue;
                     }
 
-                    string script_result = "";
-                    ProcessStartInfo start = new()
-                    {
-                        FileName = python_path,
-                        Arguments = $"{predict_py_path} {currency.Name} " +
+                    string request = $"{predict_py_path} {currency.Name} " +
                             $"{lastMon.BlockReward + diffs[i].BlockReward} " +
                             $"{lastMon.LastBlock + diffs[i].LastBlock} " +
                             $"{lastMon.Difficulty + diffs[i].Difficulty} " +
@@ -104,7 +99,12 @@ namespace CryptonRemoteBack.Controllers
                             $"{lastMon.ExchangeRateVol + diffs[i].ExchangeRateVol} " +
                             $"{lastMon.MarketCap + diffs[i].MarketCap} " +
                             $"{lastMon.PoolFee + diffs[i].PoolFee} " +
-                            $"{input.HashRate}",
+                            $"{input.HashRate}";
+                    string script_result = "";
+                    ProcessStartInfo start = new()
+                    {
+                        FileName = python_path,
+                        Arguments = request,
                         UseShellExecute = false,
                         RedirectStandardOutput = true
                     };
@@ -114,17 +114,13 @@ namespace CryptonRemoteBack.Controllers
                         script_result = reader.ReadToEnd();
                     }
                     if (double.TryParse(script_result.Trim().Replace("[", "").Replace("]", ""), out double res))
-                        predictions.Add(res);
-                    else predictions.Add(double.NaN);
+                        predictions.Add(new(DateTime.Now.Date.AddDays(days), res, request));
+                    else predictions.Add(new(DateTime.Now.Date.AddDays(days), double.NaN, request));
+
+                    days++;
                 }
 
-                List<PredictionView> result = new();
-                for (int i = 0; i < predictions.Count; i++)
-                {
-                    result.Add(new(DateTime.Now.Date.AddDays(i + 1), predictions[i]));
-                }
-
-                return Ok(result);
+                return Ok(predictions);
             }
             catch (Exception ex)
             {
@@ -153,7 +149,7 @@ namespace CryptonRemoteBack.Controllers
 
                 List<Monitoring> mons = await db_data.Monitorings
                     .Include(x => x.Coin)
-                    .Where(x => x.Coin.Name == currency.Name && (hashrate > 0.0 ? x.Hashrate == hashrate : true))
+                    .Where(x => x.Coin.Name == currency.Name && (hashrate <= 0.0 || x.Hashrate == hashrate))
                     .AsNoTracking().ToListAsync(ct);
 
                 return new List<MonitoringView>(mons.Select(x => new MonitoringView(x)));

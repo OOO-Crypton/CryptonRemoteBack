@@ -82,11 +82,13 @@ namespace CryptonRemoteBack.Model
                     using TcpClient tcpClient = new();
                     await tcpClient.ConnectAsync(farmIp, 44444);
                     using NetworkStream stream = tcpClient.GetStream();
-                    byte[] result = new byte[2048 * 10];
-                    await stream.ReadAsync(result);
+                    byte[] result = new byte[1024 * 10];
 
+                    await stream.ReadAsync(result);
+                    tcpClient.Close();
+                    string resultString = Encoding.UTF8.GetString(result);
                     MinerMonitoringRecordNoCard? monitoring = JsonConvert
-                        .DeserializeObject<MinerMonitoringRecordNoCard>(Encoding.UTF8.GetString(result));
+                        .DeserializeObject<MinerMonitoringRecordNoCard>(resultString);
                     stat = new(farmId, fsId, monitoring, "OK");
                 }
                 catch (Exception ex)
@@ -104,6 +106,8 @@ namespace CryptonRemoteBack.Model
                                           true,
                                           CancellationToken.None);
             }
+
+            Thread.Sleep(5000);
         }
     }
 }

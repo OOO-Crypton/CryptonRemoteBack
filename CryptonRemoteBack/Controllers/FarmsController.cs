@@ -396,7 +396,6 @@ namespace CryptonRemoteBack.Controllers
                         farms.Select(x => (x.Id,
                                            x.ActiveFlightSheet != null ? x.ActiveFlightSheet.Id : 0,
                                            x.LocalSystemAddress)).ToList());
-                    Thread.Sleep(1000);
                 }
                 await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure,
                                            "ended",
