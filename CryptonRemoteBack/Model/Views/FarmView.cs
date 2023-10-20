@@ -1,4 +1,5 @@
 ﻿using CryptonRemoteBack.Domain;
+using Newtonsoft.Json;
 
 namespace CryptonRemoteBack.Model.Views
 {
@@ -6,7 +7,7 @@ namespace CryptonRemoteBack.Model.Views
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string SystemInfo { get; set; } = string.Empty;
+        public SystemData? SystemInfo { get; set; }
         public string LocalSystemAddress { get; set; } = string.Empty;
         public string LocalSystemID { get; set; } = string.Empty;
         public string ContainerGUID { get; set; } = string.Empty;
@@ -17,7 +18,7 @@ namespace CryptonRemoteBack.Model.Views
         {
             Id = farm.Id;
             Name = farm.Name;
-            SystemInfo = farm.SystemInfo;
+            SystemInfo = JsonConvert.DeserializeObject<SystemData>(farm.SystemInfo);
             LocalSystemID = farm.LocalSystemID;
             LocalSystemAddress = farm.LocalSystemAddress;
             ContainerGUID = farm.ContainerGUID;
@@ -25,5 +26,12 @@ namespace CryptonRemoteBack.Model.Views
             ActiveFlightSheet = farm.ActiveFlightSheet != null
                 ? new FlightSheetView(farm.ActiveFlightSheet, true) : null;
         }
+    }
+
+    public class SystemData
+    {
+        public string Motherboard { get; set; } = string.Empty;
+        public string CPU { get; set; } = string.Empty;
+        public string OSVersion { get; set; } = string.Empty;
     }
 }
