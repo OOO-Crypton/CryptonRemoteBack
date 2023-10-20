@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.WebSockets;
 using System.Text;
@@ -135,7 +136,7 @@ namespace CryptonRemoteBack.Controllers
 
             if (farm.ActiveFlightSheet == null)
             {
-                return NotFound($"Farm {farmId} has no active flight sheet");
+                return BadRequest($"Farm {farmId} has no active flight sheet");
             }
 
             if (await FarmsHelpers.StartFarm(farm.LocalSystemAddress,
@@ -170,7 +171,7 @@ namespace CryptonRemoteBack.Controllers
 
             if (farm.ActiveFlightSheet == null)
             {
-                return NotFound($"Farm {farmId} has no active flight sheet");
+                return BadRequest($"Farm {farmId} has no active flight sheet");
             }
 
             if (await FarmsHelpers.StopFarm(farm.LocalSystemAddress,
@@ -202,7 +203,7 @@ namespace CryptonRemoteBack.Controllers
 
             if (farm.ActiveFlightSheet == null)
             {
-                return NotFound($"Farm {farmId} has no active flight sheet");
+                return BadRequest($"Farm {farmId} has no active flight sheet");
             }
 
             if (await FarmsHelpers.RestartFarm(farm.LocalSystemAddress,
@@ -215,51 +216,51 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/farms/{farmId:int}/get_monitorings")]
-        [Authorize]
-        public async Task<ActionResult<List<MinerMonitoringRecord>?>> GetFarmMonitorings(
-            [FromServices] CryptonRemoteBackDbContext db,
-            [FromRoute] int farmId,
-            CancellationToken ct)
-        {
-            Farm? farm = await db.Farms.Include(x => x.User)
-                .FirstOrDefaultAsync(x => x.User.Id == UserId && x.Id == farmId, ct);
+        //[HttpGet("/api/farms/{farmId:int}/get_monitorings")]
+        //[Authorize]
+        //public async Task<ActionResult<List<MinerMonitoringRecord>?>> GetFarmMonitorings(
+        //    [FromServices] CryptonRemoteBackDbContext db,
+        //    [FromRoute] int farmId,
+        //    CancellationToken ct)
+        //{
+        //    Farm? farm = await db.Farms.Include(x => x.User)
+        //        .FirstOrDefaultAsync(x => x.User.Id == UserId && x.Id == farmId, ct);
 
-            if (farm == null)
-            {
-                return NotFound($"Farm {farmId} not found for current user");
-            }
+        //    if (farm == null)
+        //    {
+        //        return NotFound($"Farm {farmId} not found for current user");
+        //    }
 
-            List<MinerMonitoringRecord>? result = await FarmsHelpers.GetMonitorings(farm.LocalSystemAddress);
-            return result;
-        }
+        //    List<MinerMonitoringRecord>? result = await FarmsHelpers.GetMonitorings(farm.LocalSystemAddress);
+        //    return result;
+        //}
 
 
-        [HttpGet("/farms/get_all_farms_monitorings")]
-        [Authorize]
-        public async Task<ActionResult<List<FarmMonitoringView>>> GetAllFarmsMonitorings(
-            [FromServices] CryptonRemoteBackDbContext db,
-            CancellationToken ct)
-        {
-            List<Farm> farms = await db.Farms
-                .Include(x => x.User)
-                .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Miner)
-                .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Wallet)
-                .Where(x => x.User.Id == UserId).AsNoTracking().ToListAsync(ct);
+        //[HttpGet("/api/farms/get_all_farms_monitorings")]
+        //[Authorize]
+        //public async Task<ActionResult<List<FarmMonitoringView>>> GetAllFarmsMonitorings(
+        //    [FromServices] CryptonRemoteBackDbContext db,
+        //    CancellationToken ct)
+        //{
+        //    List<Farm> farms = await db.Farms
+        //        .Include(x => x.User)
+        //        .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Miner)
+        //        .Include(x => x.ActiveFlightSheet).ThenInclude(x => x.Wallet)
+        //        .Where(x => x.User.Id == UserId).AsNoTracking().ToListAsync(ct);
 
-            if (farms == null || farms.Count == 0)
-            {
-                return NotFound($"Farms not found for current user");
-            }
+        //    if (farms == null || farms.Count == 0)
+        //    {
+        //        return NotFound($"Farms not found for current user");
+        //    }
 
-            List<FarmMonitoringView> result = new();
-            foreach (Farm farm in farms)
-            {
-                result.Add(new(farm, await FarmsHelpers.GetMonitorings(farm.LocalSystemAddress)));
-            }
+        //    List<FarmMonitoringView> result = new();
+        //    foreach (Farm farm in farms)
+        //    {
+        //        result.Add(new(farm, await FarmsHelpers.GetMonitorings(farm.LocalSystemAddress)));
+        //    }
             
-            return result;
-        }
+        //    return result;
+        //}
 
 
         [HttpPatch("/farms/{farmId:int}/switch_flight_sheet")]
@@ -309,7 +310,7 @@ namespace CryptonRemoteBack.Controllers
             }
 
             farm.LocalSystemAddress = input.LocalSystemAddress;
-            farm.SystemInfo = input.SystemInfo;
+            farm.SystemInfo = JsonConvert.SerializeObject(input.SystemInfo);
             await db.SaveChangesAsync(ct);
             return Ok(farm.Id);
         }

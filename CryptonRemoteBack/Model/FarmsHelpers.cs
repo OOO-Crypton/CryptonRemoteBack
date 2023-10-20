@@ -87,8 +87,8 @@ namespace CryptonRemoteBack.Model
                     await stream.ReadAsync(result);
                     tcpClient.Close();
                     string resultString = Encoding.UTF8.GetString(result);
-                    MinerMonitoringRecordNoCard? monitoring = JsonConvert
-                        .DeserializeObject<MinerMonitoringRecordNoCard>(resultString);
+                    List<VideocardView>? monitoring = JsonConvert
+                        .DeserializeObject<List<VideocardView>>(resultString);
                     stat = new(farmId, fsId, monitoring, "OK");
                 }
                 catch (Exception ex)

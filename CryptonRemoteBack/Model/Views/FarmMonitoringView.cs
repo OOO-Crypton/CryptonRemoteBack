@@ -17,10 +17,10 @@ namespace CryptonRemoteBack.Model.Views
     {
         public int Farm { get; set; }
         public int ActiveFlightSheetId { get; set; }
-        public MinerMonitoringRecordNoCard? Stat { get; set; }
+        public List<VideocardView>? Stat { get; set; }
         public string Message { get; set; }
 
-        public FarmStatView(int farmId, int activeFSId, MinerMonitoringRecordNoCard? stat, string message)
+        public FarmStatView(int farmId, int activeFSId, List<VideocardView>? stat, string message)
         {
             Farm = farmId;
             ActiveFlightSheetId = activeFSId;

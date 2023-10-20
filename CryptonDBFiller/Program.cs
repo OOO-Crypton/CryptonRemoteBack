@@ -6,8 +6,8 @@ using Npgsql;
 
 Console.WriteLine("Starting...");
 
-NpgsqlConnectionStringBuilder builder = new("Server=localhost;Port=5432;Database=cryptondb;User Id=crypton_user;Password=crypton_pass;");
-//NpgsqlConnectionStringBuilder builder = new("Server=localhost;Port=5432;Database=cryptondatabase;User Id=postgres;Password=postgres;");
+//NpgsqlConnectionStringBuilder builder = new("Server=localhost;Port=5432;Database=cryptondb;User Id=crypton_user;Password=crypton_pass;");
+NpgsqlConnectionStringBuilder builder = new("Server=localhost;Port=5432;Database=cryptondatabase;User Id=postgres;Password=postgres;");
 DbContextOptionsBuilder<CryptonRemoteBackDbContext> optionsBuilder = new();
 
 DbContextOptions<CryptonRemoteBackDbContext> options = optionsBuilder.UseNpgsql(builder.ConnectionString).Options;
