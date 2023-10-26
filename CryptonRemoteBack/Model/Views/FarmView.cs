@@ -18,7 +18,15 @@ namespace CryptonRemoteBack.Model.Views
         {
             Id = farm.Id;
             Name = farm.Name;
-            SystemInfo = JsonConvert.DeserializeObject<SystemData>(farm.SystemInfo);
+            try
+            {
+                SystemInfo = JsonConvert.DeserializeObject<SystemData>(farm.SystemInfo);
+            }
+            catch
+            {
+                SystemInfo = new() { OSVersion = farm.SystemInfo, CPU = "-", Motherboard = "-" };
+            }
+
             LocalSystemID = farm.LocalSystemID;
             LocalSystemAddress = farm.LocalSystemAddress;
             ContainerGUID = farm.ContainerGUID;

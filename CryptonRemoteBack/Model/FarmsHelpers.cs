@@ -15,12 +15,19 @@ namespace CryptonRemoteBack.Model
                                                  string additionalParams)
         {
             StartMinerParams parameters = new(walletName, poolAddress, additionalParams);
-            string route = $"http://{ip}:5000/miner/{minerName}/start";
+            string route = $"http://{ip}:8080/miner/{minerName}/start";
             string? res = await RequestHelpers.PostMessageAsync(parameters, route);
             if (res != null)
             {
-                StartMinerReturn? result = JsonConvert.DeserializeObject<StartMinerReturn>(res);
-                return result != null && string.IsNullOrWhiteSpace(result.stderr);
+                try
+                {
+                    StartMinerReturn? result = JsonConvert.DeserializeObject<StartMinerReturn>(res);
+                    return result != null && string.IsNullOrWhiteSpace(result.stderr);
+                }
+                catch
+                {
+                    return false;
+                }
             }
             else return false;
         }
@@ -28,12 +35,19 @@ namespace CryptonRemoteBack.Model
         public static async Task<bool> RestartFarm(string ip,
                                                    string minerName)
         {
-            string route = $"http://{ip}:5000/miner/{minerName}/restart";
+            string route = $"http://{ip}:8080/miner/{minerName}/restart";
             string? res = await RequestHelpers.GetMessageAsync(route);
             if (res != null)
             {
-                StartMinerReturn? result = JsonConvert.DeserializeObject<StartMinerReturn>(res);
-                return result != null && string.IsNullOrWhiteSpace(result.stderr);
+                try
+                {
+                    StartMinerReturn? result = JsonConvert.DeserializeObject<StartMinerReturn>(res);
+                    return result != null && string.IsNullOrWhiteSpace(result.stderr);
+                }
+                catch
+                {
+                    return false;
+                }
             }
             else return false;
         }
@@ -41,19 +55,26 @@ namespace CryptonRemoteBack.Model
         public static async Task<bool> StopFarm(string ip,
                                                 string minerName)
         {
-            string route = $"http://{ip}:5000/miner/{minerName}/stop";
+            string route = $"http://{ip}:8080/miner/{minerName}/stop";
             string? res = await RequestHelpers.GetMessageAsync(route);
             if (res != null)
             {
-                StartMinerReturn? result = JsonConvert.DeserializeObject<StartMinerReturn>(res);
-                return result != null && string.IsNullOrWhiteSpace(result.stderr);
+                try
+                {
+                    StartMinerReturn? result = JsonConvert.DeserializeObject<StartMinerReturn>(res);
+                    return result != null && string.IsNullOrWhiteSpace(result.stderr);
+                }
+                catch
+                {
+                    return false;
+                }
             }
             else return false;
         }
 
         public static async Task<List<MinerMonitoringRecord>?> GetMonitorings(string ip)
         {
-            string route = $"http://{ip}:5000/monitoring/list";
+            string route = $"http://{ip}:8080/monitoring/list";
             string? res = await RequestHelpers.GetMessageAsync(route);
             if (res != null)
             {
@@ -76,6 +97,7 @@ namespace CryptonRemoteBack.Model
             List<FarmStatView> stats = new();
             foreach ((int farmId, int fsId, string farmIp) in farms)
             {
+                if (string.IsNullOrWhiteSpace(farmIp)) continue;
                 FarmStatView? stat;
                 try
                 {

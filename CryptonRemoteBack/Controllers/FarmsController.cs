@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 
@@ -297,7 +298,7 @@ namespace CryptonRemoteBack.Controllers
 
         [HttpPost("/farms/register")]
         public async Task<ActionResult> RegisterFarm(
-            [FromForm] FarmRegisterModel input,
+            [FromBody] FarmRegisterModel input,
             [FromServices] CryptonRemoteBackDbContext db,
             CancellationToken ct)
         {
@@ -309,10 +310,17 @@ namespace CryptonRemoteBack.Controllers
                 return NotFound($"Farm {input.LocalSystemID} not found");
             }
 
-            farm.LocalSystemAddress = input.LocalSystemAddress;
-            farm.SystemInfo = JsonConvert.SerializeObject(input.SystemInfo);
-            await db.SaveChangesAsync(ct);
-            return Ok(farm.Id);
+            if (IPAddress.TryParse(input.LocalSystemAddress, out _))
+            {
+                farm.LocalSystemAddress = input.LocalSystemAddress;
+                farm.SystemInfo = JsonConvert.SerializeObject(input.SystemInfo);
+                await db.SaveChangesAsync(ct);
+                return Ok(farm.Id);
+            }
+            else
+            {
+                return BadRequest("Incorrect IP address");
+            }
         }
 
 
@@ -368,10 +376,10 @@ namespace CryptonRemoteBack.Controllers
                                               WebSocketMessageType.Text,
                                               true,
                                               CancellationToken.None);
+                    HttpContext.Response.StatusCode = 401;
                     await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure,
                                                "invalid token",
                                                CancellationToken.None);
-                    HttpContext.Response.StatusCode = 401;
                     return;
                 }
 

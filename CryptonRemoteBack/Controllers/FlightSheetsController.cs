@@ -42,7 +42,7 @@ namespace CryptonRemoteBack.Controllers
             FlightSheet flightSheet = new()
             {
                 Name = input.Name,
-                ExtendedConfig = input.ExtendedConfig,
+                ExtendedConfig = input.ExtendedConfig ?? "",
                 User = await db.Users.FirstAsync(x => x.Id == UserId.ToString(), ct),
                 Miner = miner,
                 Wallet = wallet,
@@ -69,6 +69,16 @@ namespace CryptonRemoteBack.Controllers
             if (flightSheet == null || flightSheet.User.Id != UserId)
             {
                 return NotFound($"FlightSheet {flightSheetId} not found for current user");
+            }
+
+            Farm? farm = await db.Farms
+                .Include(x => x.ActiveFlightSheet)
+                .FirstOrDefaultAsync(x => x.ActiveFlightSheet != null
+                                          && x.ActiveFlightSheet.Id == flightSheet.Id, ct);
+            if (farm != null)
+            {
+                farm.ActiveFlightSheet = null;
+                await db.SaveChangesAsync(ct);
             }
 
             db.FlightSheets.Remove(flightSheet);
