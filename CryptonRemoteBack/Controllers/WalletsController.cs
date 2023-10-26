@@ -17,7 +17,7 @@ namespace CryptonRemoteBack.Controllers
         public WalletsController() { }
 
 
-        [HttpPost("/wallets/add")]
+        [HttpPost("/api/wallets/add")]
         [Authorize]
         public async Task<ActionResult> AddWallet(
             [FromForm] WalletModel input,
@@ -52,7 +52,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpDelete("/wallets/delete/{walletId:int}")]
+        [HttpDelete("/api/wallets/delete/{walletId:int}")]
         [Authorize]
         public async Task<ActionResult> DeleteWallet(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -74,7 +74,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
         
-        [HttpGet("/wallets/all")]
+        [HttpGet("/api/wallets/all")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<WalletView>>> GetAllWallets(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -89,7 +89,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/wallets/{walletId:int}")]
+        [HttpGet("/api/wallets/{walletId:int}")]
         [Authorize]
         public async Task<ActionResult<WalletView>> GetWallet(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -110,7 +110,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/wallets/currencies_list")]
+        [HttpGet("/api/wallets/currencies_list")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<CurrencyView>>> GetCurrencies(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -122,7 +122,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPut("/wallets/{walletId:int}/edit")]
+        [HttpPut("/api/wallets/{walletId:int}/edit")]
         [Authorize]
         public async Task<ActionResult> EditWallet(
             [FromForm] WalletModel input,

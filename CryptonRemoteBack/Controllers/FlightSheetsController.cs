@@ -17,7 +17,7 @@ namespace CryptonRemoteBack.Controllers
         public FlightSheetsController() { }
 
 
-        [HttpPost("/flight_sheets/add")]
+        [HttpPost("/api/flight_sheets/add")]
         [Authorize]
         public async Task<ActionResult> AddFlightSheet(
             [FromForm] FlightSheetModel input,
@@ -55,7 +55,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpDelete("/flight_sheets/delete/{flightSheetId:int}")]
+        [HttpDelete("/api/flight_sheets/delete/{flightSheetId:int}")]
         [Authorize]
         public async Task<ActionResult> DeleteFlightSheet(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -87,7 +87,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/flight_sheets/all")]
+        [HttpGet("/api/flight_sheets/all")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<FlightSheetView>>> GetAllFlightSheets(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -109,7 +109,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/flight_sheets/{flightSheetId:int}")]
+        [HttpGet("/api/flight_sheets/{flightSheetId:int}")]
         [Authorize]
         public async Task<ActionResult<FlightSheetView>> GetFlightSheet(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -138,7 +138,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/flight_sheets/miners_list")]
+        [HttpGet("/api/flight_sheets/miners_list")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<MinerView>>> GetMiners(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -150,7 +150,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/flight_sheets/miners_list/{minerId:int}")]
+        [HttpGet("/api/flight_sheets/miners_list/{minerId:int}")]
         [Authorize]
         public async Task<ActionResult<MinerView>> GetMinerInfo(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -166,7 +166,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPut("/flight_sheets/{flightSheetId:int}/edit")]
+        [HttpPut("/api/flight_sheets/{flightSheetId:int}/edit")]
         [Authorize]
         public async Task<ActionResult> EditFlightSheet(
             [FromForm] FlightSheetModel input,

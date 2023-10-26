@@ -42,7 +42,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPost("/login")]
+        [HttpPost("/api/login")]
         public async Task<IActionResult> Login([FromBody] LoginModel data)
         {
             ApplicationUser? user = await _userManager.FindByEmailAsync(data.Email ?? "");
@@ -83,7 +83,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPost("/register")]
+        [HttpPost("/api/register")]
         public async Task<IActionResult> Register(
             [FromBody] RegisterModel registerModel,
             CancellationToken ct)
@@ -120,7 +120,7 @@ namespace CryptonRemoteBack.Controllers
             return Ok("Success");
         }
 
-        [HttpGet("/refresh-token")]
+        [HttpGet("/api/refresh-token")]
         public async Task<IActionResult> RefreshToken([FromQuery] TokenModel tokenModel)
         {
             if (tokenModel == null)
@@ -178,7 +178,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPatch("/changepassword")]
+        [HttpPatch("/api/changepassword")]
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangeUserPasswordModel model,
                                                         CancellationToken ct)
@@ -213,7 +213,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPatch("/changeemail")]
+        [HttpPatch("/api/changeemail")]
         [Authorize]
         public async Task<IActionResult> ChangeEmail([FromBody] ChangeUserEmailModel model,
                                                      CancellationToken ct)
@@ -249,7 +249,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPatch("/changephone")]
+        [HttpPatch("/api/changephone")]
         [Authorize]
         public async Task<IActionResult> ChangePhone([FromBody] ChangeUserPhoneModel model,
                                                      CancellationToken ct)
@@ -285,7 +285,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/getuserinfo")]
+        [HttpGet("/api/getuserinfo")]
         [Authorize]
         public async Task<ActionResult<UserView>> GetUserInfo(
             CancellationToken ct)

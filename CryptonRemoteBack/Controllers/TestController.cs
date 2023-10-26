@@ -10,7 +10,7 @@ namespace CryptonRemoteBack.Controllers
     {
         public TestController() { }
 
-        [HttpGet("/ws")]
+        [HttpGet("/api/ws")]
         public async Task Get()
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)

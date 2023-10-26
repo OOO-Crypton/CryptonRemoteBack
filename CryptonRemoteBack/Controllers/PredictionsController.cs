@@ -28,7 +28,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/predictions/get_prediction")]
+        [HttpGet("/api/predictions/get_prediction")]
         [Authorize]
         public async Task<ActionResult<List<PredictionView>>> GetPrediction(
             [FromQuery] PredictionModel input,
@@ -129,7 +129,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/predictions/get_monitorings/{coinId:int}/{hashrate:double}")]
+        [HttpGet("/api/predictions/get_monitorings/{coinId:int}/{hashrate:double}")]
         [Authorize]
         public async Task<ActionResult<List<MonitoringView>>> GetMonitorings(
             [FromRoute] int coinId,

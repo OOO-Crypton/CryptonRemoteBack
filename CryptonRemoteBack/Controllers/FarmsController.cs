@@ -29,7 +29,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPost("/farms/add")]
+        [HttpPost("/api/farms/add")]
         [Authorize]
         public async Task<ActionResult> AddFarm(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -57,7 +57,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpDelete("/farms/delete/{farmId:int}")]
+        [HttpDelete("/api/farms/delete/{farmId:int}")]
         [Authorize]
         public async Task<ActionResult> DeleteFarm(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -79,7 +79,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/farms/all")]
+        [HttpGet("/api/farms/all")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<FarmView>>> GetAllFarms(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -95,7 +95,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/farms/{farmId:int}")]
+        [HttpGet("/api/farms/{farmId:int}")]
         [Authorize]
         public async Task<ActionResult<FarmView>> GetFarm(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -117,7 +117,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/farms/{farmId:int}/start")]
+        [HttpGet("/api/farms/{farmId:int}/start")]
         [Authorize]
         public async Task<IActionResult> StartFarm(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -153,7 +153,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/farms/{farmId:int}/stop")]
+        [HttpGet("/api/farms/{farmId:int}/stop")]
         [Authorize]
         public async Task<IActionResult> StopFarm(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -185,7 +185,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/farms/{farmId:int}/restart")]
+        [HttpGet("/api/farms/{farmId:int}/restart")]
         [Authorize]
         public async Task<IActionResult> RestartFarm(
             [FromServices] CryptonRemoteBackDbContext db,
@@ -264,7 +264,7 @@ namespace CryptonRemoteBack.Controllers
         //}
 
 
-        [HttpPatch("/farms/{farmId:int}/switch_flight_sheet")]
+        [HttpPatch("/api/farms/{farmId:int}/switch_flight_sheet")]
         [Authorize]
         public async Task<ActionResult> SwitchFlightSheet(
             [FromBody] int? flightSheetId,
@@ -296,7 +296,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPost("/farms/register")]
+        [HttpPost("/api/farms/register")]
         public async Task<ActionResult> RegisterFarm(
             [FromBody] FarmRegisterModel input,
             [FromServices] CryptonRemoteBackDbContext db,
@@ -324,7 +324,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpPost("/farms/set_info")]
+        [HttpPost("/api/farms/set_info")]
         public async Task<ActionResult> SetInfo(
             [FromForm] FarmInfoModel input,
             [FromServices] CryptonRemoteBackDbContext db,
@@ -344,7 +344,7 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
-        [HttpGet("/farms/stats")]
+        [HttpGet("/api/farms/stats")]
         public async Task GetStats([FromServices] CryptonRemoteBackDbContext db,
                                    [FromQuery] string token,
                                    CancellationToken ct)
