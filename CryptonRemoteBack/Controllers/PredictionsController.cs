@@ -84,9 +84,10 @@ namespace CryptonRemoteBack.Controllers
                 int days = 1;
                 for (int i = -6; i <= 0; i++)
                 {
+                    var date = DateTime.Now.Date.AddDays(days);
                     if (diffs[i] == null)
                     {
-                        predictions.Add(new(DateTime.Now.Date.AddDays(days), -1.0, ""));
+                        predictions.Add(new(date, -1.0, ""));
                         continue;
                     }
 
@@ -114,8 +115,8 @@ namespace CryptonRemoteBack.Controllers
                         script_result = reader.ReadToEnd();
                     }
                     if (double.TryParse(script_result.Trim().Replace("[", "").Replace("]", ""), out double res))
-                        predictions.Add(new(DateTime.Now.Date.AddDays(days), res, request));
-                    else predictions.Add(new(DateTime.Now.Date.AddDays(days), double.NaN, request));
+                        predictions.Add(new(date, res, request));
+                    else predictions.Add(new(date, double.NaN, request));
 
                     days++;
                 }
