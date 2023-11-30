@@ -17,6 +17,10 @@ namespace CryptonRemoteBack.Controllers
         public WalletsController() { }
 
 
+        /// <summary>
+        /// Создание кошелька
+        /// </summary>
+        /// <param name="input">Входные данные</param>
         [HttpPost("/api/wallets/add")]
         [Authorize]
         public async Task<ActionResult> AddWallet(
@@ -52,6 +56,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Удаление кошелька
+        /// </summary>
+        /// <param name="walletId">Идентификатор кошелька</param>
         [HttpDelete("/api/wallets/delete/{walletId:int}")]
         [Authorize]
         public async Task<ActionResult> DeleteWallet(
@@ -74,6 +82,9 @@ namespace CryptonRemoteBack.Controllers
         }
 
         
+        /// <summary>
+        /// Получение всех кошельков пользователя
+        /// </summary>
         [HttpGet("/api/wallets/all")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<WalletView>>> GetAllWallets(
@@ -89,6 +100,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Получение информации о кошельке
+        /// </summary>
+        /// <param name="walletId">Идентификатор кошелька</param>
         [HttpGet("/api/wallets/{walletId:int}")]
         [Authorize]
         public async Task<ActionResult<WalletView>> GetWallet(
@@ -110,6 +125,9 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Получение словаря монет
+        /// </summary>
         [HttpGet("/api/wallets/currencies_list")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<CurrencyView>>> GetCurrencies(
@@ -122,6 +140,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Редактирование кошелька
+        /// </summary>
+        /// <param name="input">Входные данные</param>
+        /// <param name="walletId">Идентификатор кошелька</param>
         [HttpPut("/api/wallets/{walletId:int}/edit")]
         [Authorize]
         public async Task<ActionResult> EditWallet(

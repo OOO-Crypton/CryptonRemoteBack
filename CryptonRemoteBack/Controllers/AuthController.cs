@@ -42,6 +42,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Вход в систему 
+        /// </summary>
+        /// <param name="data">Данные для входа</param>
         [HttpPost("/api/login")]
         public async Task<IActionResult> Login([FromBody] LoginModel data)
         {
@@ -83,6 +87,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Регистрация
+        /// </summary>
+        /// <param name="registerModel">Данные для регистрации</param>
         [HttpPost("/api/register")]
         public async Task<IActionResult> Register(
             [FromBody] RegisterModel registerModel,
@@ -120,6 +128,10 @@ namespace CryptonRemoteBack.Controllers
             return Ok("Success");
         }
 
+        /// <summary>
+        /// Обновление токена авторизации
+        /// </summary>
+        /// <param name="tokenModel">Сведения об обновляемом токене</param>
         [HttpGet("/api/refresh-token")]
         public async Task<IActionResult> RefreshToken([FromQuery] TokenModel tokenModel)
         {
@@ -178,6 +190,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Смена пароля
+        /// </summary>
+        /// <param name="model">Необходимые данные для смены пароля</param>
         [HttpPatch("/api/changepassword")]
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangeUserPasswordModel model,
@@ -213,6 +229,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Смена E-Mail адреса
+        /// </summary>
+        /// <param name="model">необходимые данные для смены адреса</param>
         [HttpPatch("/api/changeemail")]
         [Authorize]
         public async Task<IActionResult> ChangeEmail([FromBody] ChangeUserEmailModel model,
@@ -249,6 +269,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Смена номера телефона
+        /// </summary>
+        /// <param name="model">Необходимые данные для смены номера телефона</param>
         [HttpPatch("/api/changephone")]
         [Authorize]
         public async Task<IActionResult> ChangePhone([FromBody] ChangeUserPhoneModel model,
@@ -285,6 +309,9 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Получение информации о текущем пользователе
+        /// </summary>
         [HttpGet("/api/getuserinfo")]
         [Authorize]
         public async Task<ActionResult<UserView>> GetUserInfo(

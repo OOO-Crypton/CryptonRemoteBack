@@ -29,6 +29,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Создание фермы
+        /// </summary>
+        /// <param name="input">Входные данные</param>
         [HttpPost("/api/farms/add")]
         [Authorize]
         public async Task<ActionResult> AddFarm(
@@ -57,6 +61,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Удаление фермы
+        /// </summary>
+        /// <param name="farmId">Идентификатор фермы</param>
         [HttpDelete("/api/farms/delete/{farmId:int}")]
         [Authorize]
         public async Task<ActionResult> DeleteFarm(
@@ -79,6 +87,9 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Получение списка ферм пользователя
+        /// </summary>
         [HttpGet("/api/farms/all")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<FarmView>>> GetAllFarms(
@@ -95,6 +106,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Получение информации о ферме
+        /// </summary>
+        /// <param name="farmId">Идентификатор фермы</param>
         [HttpGet("/api/farms/{farmId:int}")]
         [Authorize]
         public async Task<ActionResult<FarmView>> GetFarm(
@@ -117,6 +132,109 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Выставление параметров разгона фермы
+        /// </summary>
+        /// <param name="farmId">Идентификатор фермы</param>
+        [HttpPost("/api/farms/{farmId:int}/set_overclocking")]
+        [Authorize]
+        public async Task<IActionResult> FarmSetOverclocking(
+            [FromServices] CryptonRemoteBackDbContext db,
+            [FromRoute] int farmId,
+            [FromBody] FarmOverclockingModel input,
+            CancellationToken ct)
+        {
+            Farm? farm = await db.Farms
+                .Include(x => x.User)
+                .FirstOrDefaultAsync(x => x.User.Id == UserId && x.Id == farmId, ct);
+
+            if (farm == null)
+            {
+                return NotFound($"Farm {farmId} not found for current user");
+            }
+
+            if (await FarmsHelpers.Overclocking(farm.LocalSystemAddress, input))
+            {
+                return Ok("Success");
+            }
+
+            return BadRequest("Failed");
+        }
+
+
+        /// <summary>
+        /// Выбор параметров разгона фермы
+        /// </summary>
+        /// <param name="input">Входные параметры</param>
+        [HttpPost("/api/farms/select_overclocking")]
+        [Authorize]
+        public async Task<IActionResult> FarmSelectOverclocking(
+            [FromServices] CryptonRemoteBackDbContext db,
+            [FromBody] SelectOverclockingModel input,
+            CancellationToken ct)
+        {
+            Farm? farm = await db.Farms
+                .Include(x => x.User)
+                .FirstOrDefaultAsync(x => x.User.Id == UserId && x.Id == input.FarmId, ct);
+
+            if (farm == null)
+            {
+                return NotFound($"Farm {input.FarmId} not found for current user");
+            }
+
+            OverclockingParams parameters = await db.OverclockingParams
+                .FirstAsync(x => x.Id == input.OverclockingParamsId, ct);
+            parameters.Counter += 1;
+            _ = await db.SaveChangesAsync(ct);
+
+            if (await FarmsHelpers.Overclocking(farm.LocalSystemAddress,
+                new FarmOverclockingModel()
+                {
+                    СoreFrequency = parameters.СoreFrequency,
+                    MemoryFrequency = parameters.MemoryFrequency,
+                    CoolerSpeed = parameters.CoolerSpeed,
+                    Consumption = parameters.Consumption,
+                }))
+            {
+                return Ok("Success");
+            }
+
+            return BadRequest("Failed");
+        }
+
+
+        /// <summary>
+        /// Просмотр доступных параметров разгона фермы
+        /// </summary>
+        [HttpGet("/api/farms/get_overclocking")]
+        [Authorize]
+        public async Task<IActionResult> GetOverclocking(
+            [FromServices] CryptonRemoteBackDbContext db,
+            CancellationToken ct)
+        {
+            List<OverclockingParams> parameters = await db.OverclockingParams.ToListAsync(ct);
+            return Ok(parameters);
+        }
+
+
+        /// <summary>
+        /// Просмотр наиболее часто используемых параметров разгона фермы
+        /// </summary>
+        [HttpGet("/api/farms/get_best_overclocking")]
+        [Authorize]
+        public async Task<IActionResult> GetBestOverclocking(
+            [FromServices] CryptonRemoteBackDbContext db,
+            CancellationToken ct)
+        {
+            List<OverclockingParams> parameters = await db.OverclockingParams.ToListAsync(ct);
+            return Ok(parameters.OrderByDescending(x => x.Counter).Take(3));
+        }
+
+
+        /// <summary>
+        /// Заупск фермы
+        /// </summary>
+        /// <param name="farmId">Идентификатор фермы</param>
         [HttpGet("/api/farms/{farmId:int}/start")]
         [Authorize]
         public async Task<IActionResult> StartFarm(
@@ -153,6 +271,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Остановка фермы
+        /// </summary>
+        /// <param name="farmId">Идентификатор фермы</param>
         [HttpGet("/api/farms/{farmId:int}/stop")]
         [Authorize]
         public async Task<IActionResult> StopFarm(
@@ -185,6 +307,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Перезапуск фермы
+        /// </summary>
+        /// <param name="farmId">Идентификатор фермы</param>
         [HttpGet("/api/farms/{farmId:int}/restart")]
         [Authorize]
         public async Task<IActionResult> RestartFarm(
@@ -259,11 +385,16 @@ namespace CryptonRemoteBack.Controllers
         //    {
         //        result.Add(new(farm, await FarmsHelpers.GetMonitorings(farm.LocalSystemAddress)));
         //    }
-            
+
         //    return result;
         //}
 
 
+        /// <summary>
+        /// Смена полётного листа фермы
+        /// </summary>
+        /// <param name="flightSheetId">Идентификатор полётного листа</param>
+        /// <param name="farmId">Идентификатор фермы</param>
         [HttpPatch("/api/farms/{farmId:int}/switch_flight_sheet")]
         [Authorize]
         public async Task<ActionResult> SwitchFlightSheet(
@@ -296,6 +427,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Редистрация фермы в системе (вызывается локальной системой)
+        /// </summary>
+        /// <param name="input">Входные данные</param>
         [HttpPost("/api/farms/register")]
         public async Task<ActionResult> RegisterFarm(
             [FromBody] FarmRegisterModel input,
@@ -324,6 +459,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Измененеие данных о локальной системе (вызывается локальной системой)
+        /// </summary>
+        /// <param name="input">Входные данные</param>
         [HttpPost("/api/farms/set_info")]
         public async Task<ActionResult> SetInfo(
             [FromForm] FarmInfoModel input,
@@ -344,6 +483,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Получение данных мониторинга ферм пользователя
+        /// </summary>
+        /// <param name="token">Токен авторизации</param>
         [HttpGet("/api/farms/stats")]
         public async Task GetStats([FromServices] CryptonRemoteBackDbContext db,
                                    [FromQuery] string token,

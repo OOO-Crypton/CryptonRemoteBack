@@ -12,6 +12,7 @@ namespace CryptonRemoteBack.Infrastructure
         public DbSet<FlightSheet> FlightSheets { get; set; } = null!;
         public DbSet<Miner> Miners { get; set; } = null!;
         public DbSet<Wallet> Wallets { get; set; } = null!;
+        public DbSet<OverclockingParams> OverclockingParams { get; set; } = null!;
 
         public CryptonRemoteBackDbContext(DbContextOptions<CryptonRemoteBackDbContext> options)
             : base(options) {   

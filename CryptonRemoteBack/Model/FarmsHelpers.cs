@@ -1,4 +1,5 @@
-﻿using CryptonRemoteBack.Model.Views;
+﻿using CryptonRemoteBack.Model.Models;
+using CryptonRemoteBack.Model.Views;
 using Newtonsoft.Json;
 using System.Net.Sockets;
 using System.Net.WebSockets;
@@ -8,6 +9,15 @@ namespace CryptonRemoteBack.Model
 {
     public static class FarmsHelpers
     {
+        /// <summary>
+        /// Запуск
+        /// </summary>
+        /// <param name="ip">Адрес фермы</param>
+        /// <param name="minerName">Название майнера</param>
+        /// <param name="poolAddress">Адрес пула</param>
+        /// <param name="walletName">Название кошелька</param>
+        /// <param name="additionalParams">Дополнительные параметры командной строки</param>
+        /// <returns>true, если запуск успешен</returns>
         public static async Task<bool> StartFarm(string ip,
                                                  string minerName,
                                                  string poolAddress,
@@ -21,7 +31,7 @@ namespace CryptonRemoteBack.Model
             {
                 try
                 {
-                    StartMinerReturn? result = JsonConvert.DeserializeObject<StartMinerReturn>(res);
+                    MinerReturn? result = JsonConvert.DeserializeObject<MinerReturn>(res);
                     return result != null && string.IsNullOrWhiteSpace(result.stderr);
                 }
                 catch
@@ -32,6 +42,12 @@ namespace CryptonRemoteBack.Model
             else return false;
         }
 
+        /// <summary>
+        /// Перезапуск
+        /// </summary>
+        /// <param name="ip">Адрес фермы</param>
+        /// <param name="minerName">Название майнера</param>
+        /// <returns>true, если перезапуск успешен</returns>
         public static async Task<bool> RestartFarm(string ip,
                                                    string minerName)
         {
@@ -41,7 +57,7 @@ namespace CryptonRemoteBack.Model
             {
                 try
                 {
-                    StartMinerReturn? result = JsonConvert.DeserializeObject<StartMinerReturn>(res);
+                    MinerReturn? result = JsonConvert.DeserializeObject<MinerReturn>(res);
                     return result != null && string.IsNullOrWhiteSpace(result.stderr);
                 }
                 catch
@@ -52,6 +68,12 @@ namespace CryptonRemoteBack.Model
             else return false;
         }
 
+        /// <summary>
+        /// Остановка
+        /// </summary>
+        /// <param name="ip">Адрес фермы</param>
+        /// <param name="minerName">Название майнера</param>
+        /// <returns></returns>
         public static async Task<bool> StopFarm(string ip,
                                                 string minerName)
         {
@@ -61,7 +83,7 @@ namespace CryptonRemoteBack.Model
             {
                 try
                 {
-                    StartMinerReturn? result = JsonConvert.DeserializeObject<StartMinerReturn>(res);
+                    MinerReturn? result = JsonConvert.DeserializeObject<MinerReturn>(res);
                     return result != null && string.IsNullOrWhiteSpace(result.stderr);
                 }
                 catch
@@ -72,6 +94,11 @@ namespace CryptonRemoteBack.Model
             else return false;
         }
 
+        /// <summary>
+        /// Получение архива данных мониторинга
+        /// </summary>
+        /// <param name="ip">Адрес фермы</param>
+        /// <returns>Данные мониторинга</returns>
         public static async Task<List<MinerMonitoringRecord>?> GetMonitorings(string ip)
         {
             string route = $"http://{ip}:8080/monitoring/list";
@@ -92,6 +119,11 @@ namespace CryptonRemoteBack.Model
         }
 
 
+        /// <summary>
+        /// Получение текущих значений мониторинга
+        /// </summary>
+        /// <param name="webSocket">Веб-сокет, на который прееправляются данные</param>
+        /// <param name="farms">Данные о фермах</param>
         public async static Task GetStats(WebSocket webSocket, List<(int farmId, int fsId, string farmIp)> farms)
         {
             List<FarmStatView> stats = new();
@@ -130,6 +162,33 @@ namespace CryptonRemoteBack.Model
             }
 
             Thread.Sleep(5000);
+        }
+
+
+        /// <summary>
+        /// Разгон
+        /// </summary>
+        /// <param name="ip">Адрес фермы</param>
+        /// <param name="input">Параметры разгона</param>
+        /// <returns>true, если успешно</returns>
+        public static async Task<bool> Overclocking(string ip,
+                                                   FarmOverclockingModel input)
+        {
+            string route = $"http://{ip}:8080/overclocking/settings";
+            string? res = await RequestHelpers.PostMessageAsync(input, route);
+            if (res != null)
+            {
+                try
+                {
+                    MinerReturn? result = JsonConvert.DeserializeObject<MinerReturn>(res);
+                    return result != null && string.IsNullOrWhiteSpace(result.stderr);
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            else return false;
         }
     }
 }

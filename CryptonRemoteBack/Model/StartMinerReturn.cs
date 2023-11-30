@@ -1,6 +1,6 @@
 ﻿namespace CryptonRemoteBack.Model
 {
-    internal class StartMinerReturn
+    internal class MinerReturn
     {
         public int exitCode { get; set; }
         public string stdout { get; set; }

@@ -17,6 +17,10 @@ namespace CryptonRemoteBack.Controllers
         public FlightSheetsController() { }
 
 
+        /// <summary>
+        /// Создание полётного листа
+        /// </summary>
+        /// <param name="input">Входные данные</param>
         [HttpPost("/api/flight_sheets/add")]
         [Authorize]
         public async Task<ActionResult> AddFlightSheet(
@@ -55,6 +59,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Удаление полётного листа
+        /// </summary>
+        /// <param name="flightSheetId">Идентификатор листа</param>
         [HttpDelete("/api/flight_sheets/delete/{flightSheetId:int}")]
         [Authorize]
         public async Task<ActionResult> DeleteFlightSheet(
@@ -87,6 +95,9 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Получение всех полётных листов пользователя
+        /// </summary>
         [HttpGet("/api/flight_sheets/all")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<FlightSheetView>>> GetAllFlightSheets(
@@ -109,6 +120,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Получение информации о полётном листе пользователя
+        /// </summary>
+        /// <param name="flightSheetId">Идентификатор листа</param>
         [HttpGet("/api/flight_sheets/{flightSheetId:int}")]
         [Authorize]
         public async Task<ActionResult<FlightSheetView>> GetFlightSheet(
@@ -138,6 +153,9 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Поулчение словаря майнеров
+        /// </summary>
         [HttpGet("/api/flight_sheets/miners_list")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<MinerView>>> GetMiners(
@@ -150,6 +168,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Получение информации о майнере
+        /// </summary>
+        /// <param name="minerId">Идентификатор майнера</param>
         [HttpGet("/api/flight_sheets/miners_list/{minerId:int}")]
         [Authorize]
         public async Task<ActionResult<MinerView>> GetMinerInfo(
@@ -166,6 +188,11 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Редактирование полётного листа
+        /// </summary>
+        /// <param name="input">Входная информация</param>
+        /// <param name="flightSheetId">Идентификатор листа</param>
         [HttpPut("/api/flight_sheets/{flightSheetId:int}/edit")]
         [Authorize]
         public async Task<ActionResult> EditFlightSheet(

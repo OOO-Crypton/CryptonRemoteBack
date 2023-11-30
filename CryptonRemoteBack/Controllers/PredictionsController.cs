@@ -28,6 +28,10 @@ namespace CryptonRemoteBack.Controllers
         }
 
 
+        /// <summary>
+        /// Получение прогноза по майнингу
+        /// </summary>
+        /// <param name="input">Входные данные</param>
         [HttpGet("/api/predictions/get_prediction")]
         [Authorize]
         public async Task<ActionResult<List<PredictionView>>> GetPrediction(
