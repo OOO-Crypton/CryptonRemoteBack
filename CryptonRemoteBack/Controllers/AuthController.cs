@@ -21,7 +21,7 @@ namespace CryptonRemoteBack.Controllers
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
         private readonly int DaysForRefreshToken;
-        private readonly int HoursForToken;
+        private readonly int DaysForToken;
         private string UserId => User.GetUserId();
 
         public AuthController(ILogger<AuthController> logger,
@@ -36,9 +36,9 @@ namespace CryptonRemoteBack.Controllers
             DaysForRefreshToken = int.TryParse(_configuration["DaysForRefreshToken"], out int refreshToken)
                 ? refreshToken
                 : 7;
-            HoursForToken = int.TryParse(_configuration["HoursForToken"], out int token)
+            DaysForToken = int.TryParse(_configuration["DaysForToken"], out int token)
                 ? token
-                : 24;
+                : 14;
         }
 
 
@@ -70,7 +70,8 @@ namespace CryptonRemoteBack.Controllers
                 authClaims.Add(new Claim("Role", userRole));
             }
 
-            JwtSecurityToken? token = GetToken(authClaims, DateTime.UtcNow.AddHours(HoursForToken));
+            JwtSecurityToken? token = GetToken(authClaims, DateTime.UtcNow.AddHours(DaysForToken));
+            string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
             string userRefreshToken = GenerateRefreshToken();
             user.RefreshToken = userRefreshToken;
@@ -80,7 +81,7 @@ namespace CryptonRemoteBack.Controllers
             Console.WriteLine($"User {data.Email} logged in");
             return Ok(new
             {
-                token = new JwtSecurityTokenHandler().WriteToken(token),
+                token = tokenString,
                 refreshToken = userRefreshToken,
                 expiration = token.ValidTo,
             });
@@ -133,21 +134,14 @@ namespace CryptonRemoteBack.Controllers
         /// </summary>
         /// <param name="tokenModel">Сведения об обновляемом токене</param>
         [HttpGet("/api/refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromQuery] TokenModel tokenModel)
+        public async Task<IActionResult> RefreshToken([FromQuery] TokenModel input)
         {
-            if (tokenModel == null)
-            {
-                return BadRequest("Invalid client request");
-            }
-
-            string? accessToken = tokenModel.AccessToken;
-            string? refreshToken = tokenModel.RefreshToken;
-            if (string.IsNullOrWhiteSpace(accessToken) || string.IsNullOrWhiteSpace(refreshToken))
+            if (string.IsNullOrWhiteSpace(input.AccessToken) || string.IsNullOrWhiteSpace(input.RefreshToken))
             {
                 return BadRequest("Invalid access token or refresh token (cannot be null or empty)");
             }
 
-            ClaimsPrincipal? principal = GetPrincipalFromExpiredToken(accessToken);
+            ClaimsPrincipal? principal = GetPrincipalFromExpiredToken(input.AccessToken);
             if (principal == null)
             {
                 return BadRequest("Invalid access token");
@@ -164,7 +158,7 @@ namespace CryptonRemoteBack.Controllers
             {
                 return BadRequest("User not found in database");
             }
-            if (user.RefreshToken != refreshToken)
+            if (user.RefreshToken != input.RefreshToken)
             {
                 return BadRequest("Invalid refresh token for user");
             }
@@ -175,7 +169,8 @@ namespace CryptonRemoteBack.Controllers
 
 
             JwtSecurityToken? newAccessToken = GetToken(principal.Claims.ToList(),
-                                                        DateTime.UtcNow.AddHours(HoursForToken));
+                                                        DateTime.UtcNow.AddDays(DaysForToken));
+            string tokenString = new JwtSecurityTokenHandler().WriteToken(newAccessToken);
 
             string? newRefreshToken = GenerateRefreshToken();
             user.RefreshToken = newRefreshToken;
@@ -183,7 +178,7 @@ namespace CryptonRemoteBack.Controllers
 
             return Ok(new
             {
-                token = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
+                token = tokenString,
                 refreshToken = newRefreshToken,
                 expiration = newAccessToken.ValidTo,
             });
@@ -331,7 +326,8 @@ namespace CryptonRemoteBack.Controllers
         private JwtSecurityToken GetToken(List<Claim> authClaims, DateTime validTo)
         {
             SymmetricSecurityKey? authSigningKey
-                = new(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                = new(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]
+                ?? "111111111111111111111111111111111111111111111111"));
 
             JwtSecurityToken? token = new(
                 issuer: _configuration["JWT:Issuer"],
@@ -360,7 +356,7 @@ namespace CryptonRemoteBack.Controllers
                 ValidateIssuer = false,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
-                    .GetBytes(_configuration["JWT:Secret"])),
+                    .GetBytes(_configuration["JWT:Secret"] ?? "111111111111111111111111111111111111111111111111")),
                 ValidateLifetime = false
             };
 
