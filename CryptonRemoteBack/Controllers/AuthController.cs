@@ -132,9 +132,9 @@ namespace CryptonRemoteBack.Controllers
         /// <summary>
         /// Обновление токена авторизации
         /// </summary>
-        /// <param name="tokenModel">Сведения об обновляемом токене</param>
-        [HttpGet("/api/refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromQuery] TokenModel input)
+        /// <param name="input">Сведения об обновляемом токене</param>
+        [HttpPost("/api/refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] TokenModel input)
         {
             if (string.IsNullOrWhiteSpace(input.AccessToken) || string.IsNullOrWhiteSpace(input.RefreshToken))
             {
@@ -160,7 +160,7 @@ namespace CryptonRemoteBack.Controllers
             }
             if (user.RefreshToken != input.RefreshToken)
             {
-                return BadRequest("Invalid refresh token for user");
+                return BadRequest($"Invalid refresh token for user:\nin db : {user.RefreshToken}\ninput: {input.RefreshToken}");
             }
             if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
             {
