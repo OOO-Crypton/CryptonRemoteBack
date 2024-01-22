@@ -10,7 +10,7 @@ namespace CryptonRemoteBack.Domain
     public class OverclockingParams
     {
         [Key] public int Id { get; set; }
-        public double СoreFrequency { get; set; }
+        public double CoreFrequency { get; set; }
         public double MemoryFrequency { get; set; }
         public double CoolerSpeed { get; set; }
         public double Consumption { get; set; }

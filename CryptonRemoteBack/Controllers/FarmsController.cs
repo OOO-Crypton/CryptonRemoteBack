@@ -163,6 +163,30 @@ namespace CryptonRemoteBack.Controllers
 
 
         /// <summary>
+        /// Добавление параметров разгона фермы в бд
+        /// </summary>
+        /// <param name="input">Входные параметры</param>
+        [HttpPost("/api/farms/add_overclocking")]
+        [Authorize]
+        public async Task<IActionResult> FarmSelectOverclocking(
+            [FromServices] CryptonRemoteBackDbContext db,
+            [FromBody] FarmOverclockingModel input,
+            CancellationToken ct)
+        {
+            OverclockingParams parameters = new()
+            {
+                CoreFrequency = input.СoreFrequency,
+                MemoryFrequency = input.MemoryFrequency,
+                CoolerSpeed = input.CoolerSpeed,
+                Consumption = input.Consumption
+            };
+            _ = await db.OverclockingParams.AddAsync(parameters, ct);
+            _ = await db.SaveChangesAsync(ct);
+            return Ok(parameters.Id);
+        }
+
+
+        /// <summary>
         /// Выбор параметров разгона фермы
         /// </summary>
         /// <param name="input">Входные параметры</param>
@@ -190,7 +214,7 @@ namespace CryptonRemoteBack.Controllers
             if (await FarmsHelpers.Overclocking(farm.LocalSystemAddress,
                 new FarmOverclockingModel()
                 {
-                    СoreFrequency = parameters.СoreFrequency,
+                    СoreFrequency = parameters.CoreFrequency,
                     MemoryFrequency = parameters.MemoryFrequency,
                     CoolerSpeed = parameters.CoolerSpeed,
                     Consumption = parameters.Consumption,
