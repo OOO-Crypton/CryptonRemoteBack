@@ -7,5 +7,6 @@
         public int? MinerId { get; set; } = null;
         public int? WalletId { get; set; } = null;
         public string PoolAddress { get; set; } = string.Empty;
+        public double Hashrate { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using CryptonRemoteBack.Domain;
+using CryptonRemoteBack.Domain.CoinsDatabase;
 using CryptonRemoteBack.Extensions;
 using CryptonRemoteBack.Infrastructure;
 using CryptonRemoteBack.Model;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.WebSockets;
@@ -23,9 +25,20 @@ namespace CryptonRemoteBack.Controllers
         private string UserId => User.GetUserId();
         private readonly IConfiguration _configuration;
 
+        private readonly string? python_path;
+        private readonly string? predict_py_path;
+
         public FarmsController(IConfiguration configuration)
         {
             _configuration = configuration;
+
+            python_path = configuration["PythonPath"];
+            predict_py_path = configuration["PredictPyPath"];
+
+            if (string.IsNullOrWhiteSpace(python_path))
+                python_path = "C:\\Users\\kseny\\AppData\\Local\\Programs\\Python\\Python311\\python.exe";
+            if (string.IsNullOrWhiteSpace(predict_py_path))
+                predict_py_path = "D:\\osiris\\Crypton\\Crypton_Python\\MLCrypton\\predict.py";
         }
 
 
@@ -296,15 +309,121 @@ namespace CryptonRemoteBack.Controllers
 
 
         /// <summary>
+        /// Запуск майнинга в автоматическом режиме
+        /// </summary>
+        /// <param name="farmId">Идентификатор фермы</param>
+        [HttpGet("/api/farms/{farmId:int}/start_auto_mode")]
+        [Authorize]
+        public async Task<IActionResult> StartFarmAutoMode(
+            [FromServices] CryptonRemoteBackDbContext db,
+            [FromServices] DataParserDbContext db_data,
+            [FromRoute] int farmId,
+            CancellationToken ct)
+        {
+            Farm? farm = await db.Farms
+                .Include(x => x.User)
+                .Include(x => x.ActiveFlightSheet)
+                .FirstOrDefaultAsync(x => x.User.Id == UserId && x.Id == farmId, ct);
+
+            if (farm == null)
+            {
+                return NotFound($"Farm {farmId} not found for current user");
+            }
+
+            List<FsHolder> sheets = await db.FlightSheets
+                .Include(x => x.User)
+                .Include(x => x.Wallet).ThenInclude(x => x.Currency)
+                .Where(x => x.User.Id == UserId)
+                .AsNoTracking().Select(x => new FsHolder(x)).ToListAsync(ct);
+
+            for (int i = 0; i < sheets.Count; i++)
+            {
+                double hash;
+                if (sheets[i].Hashrate >= 100.0 && sheets[i].Hashrate <= 9950.0)
+                {
+                    for (hash = 100.0; hash <= 9950.0; hash += 50.0)
+                        if (Math.Abs(hash - sheets[i].Hashrate) <= 25.0) break;
+                }
+                else hash = sheets[i].Hashrate < 100.0 ? 100.0 : 9950.0;
+
+                List<Monitoring> mons = await db_data.Monitorings
+                    .Include(x => x.Coin)
+                    .Where(x => x.Coin.Name == sheets[i].CurrencyName && x.Hashrate == hash)
+                    .OrderByDescending(x => x.Date).Take(2)
+                    .AsNoTracking().ToListAsync(ct);
+
+                Monitoring lastMon = mons.MaxBy(x => x.Date)!;
+                Monitoring firstMon = mons.MinBy(x => x.Date)!;
+                ParamsDiff diff = new(firstMon, lastMon);
+
+                string request = $"{predict_py_path} {sheets[i].CurrencyName} " +
+                            $"{lastMon.BlockReward + diff.BlockReward} " +
+                            $"{lastMon.LastBlock + diff.LastBlock} " +
+                            $"{lastMon.Difficulty + diff.Difficulty} " +
+                            $"{lastMon.Nethash + diff.Nethash} " +
+                            $"{lastMon.ExRate + diff.ExRate} " +
+                            $"{lastMon.ExchangeRateVol + diff.ExchangeRateVol} " +
+                            $"{lastMon.MarketCap + diff.MarketCap} " +
+                            $"{lastMon.PoolFee + diff.PoolFee} " +
+                            $"{sheets[i].Hashrate}";
+
+                string script_result = "";
+                ProcessStartInfo start = new()
+                {
+                    FileName = python_path,
+                    Arguments = request,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true
+                };
+                using (Process process = Process.Start(start)!)
+                {
+                    using StreamReader reader = process.StandardOutput;
+                    script_result = reader.ReadToEnd();
+                }
+                sheets[i].Prediction = double.TryParse(script_result.Trim().Replace("[", "").Replace("]", ""), out double res)
+                    ? res : 0.0;
+            }
+
+            FsHolder? optimal = sheets.MaxBy(x => x.Prediction);
+            FlightSheet optimalFs = await db.FlightSheets
+                .Include(x => x.Miner)
+                .Include(x => x.Wallet)
+                .FirstAsync(x => x.Id == optimal!.FsId, ct);
+
+            farm.ActiveFlightSheet = optimalFs;
+            await db.SaveChangesAsync(ct);
+            return Ok($"Success, launching coin {optimal!.CurrencyName}");
+
+            try
+            {
+                if (await FarmsHelpers.StartFarm(farm.LocalSystemAddress,
+                                                 optimalFs.Miner.ContainerName,
+                                                 optimalFs.PoolAddress,
+                                                 optimalFs.Wallet.Address,
+                                                 optimalFs.ExtendedConfig))
+                {
+                    return Ok($"Success, launching coin {optimal!.CurrencyName} (prediction {optimal.Prediction})");
+                }
+
+                return BadRequest($"Failure, launching coin {optimal!.CurrencyName} (prediction {optimal.Prediction})");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"{ex.Message} {ex.StackTrace}");
+            }
+        }
+
+
+        /// <summary>
         /// Остановка фермы
         /// </summary>
         /// <param name="farmId">Идентификатор фермы</param>
         [HttpGet("/api/farms/{farmId:int}/stop")]
         [Authorize]
         public async Task<IActionResult> StopFarm(
-            [FromServices] CryptonRemoteBackDbContext db,
-            [FromRoute] int farmId,
-            CancellationToken ct)
+        [FromServices] CryptonRemoteBackDbContext db,
+        [FromRoute] int farmId,
+        CancellationToken ct)
         {
             Farm? farm = await db.Farms
                 .Include(x => x.User)
@@ -581,6 +700,22 @@ namespace CryptonRemoteBack.Controllers
             {
                 HttpContext.Response.StatusCode = 400;
             }
+        }
+    }
+
+    internal class FsHolder
+    {
+        internal int FsId { get; set; }
+        internal double Hashrate { get; set; }
+        internal string CurrencyName { get; set; }
+        internal double Prediction { get; set; }
+
+        public FsHolder(FlightSheet input)
+        {
+            FsId = input.Id;
+            Hashrate = input.Hashrate;
+            CurrencyName = input.Wallet.Currency.Name;
+            Prediction = 0.0;
         }
     }
 }

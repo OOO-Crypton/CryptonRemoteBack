@@ -16,6 +16,8 @@ namespace CryptonRemoteBack.Domain
         /// </summary>
         public string Name { get; set; } = string.Empty;
 
+        public double Hashrate { get; set; }
+
         /// <summary>
         /// Командная строка
         /// </summary>

@@ -50,7 +50,8 @@ namespace CryptonRemoteBack.Controllers
                 User = await db.Users.FirstAsync(x => x.Id == UserId.ToString(), ct),
                 Miner = miner,
                 Wallet = wallet,
-                PoolAddress = input.PoolAddress
+                PoolAddress = input.PoolAddress,
+                Hashrate = input.Hashrate,
             };
 
             await db.FlightSheets.AddAsync(flightSheet, ct);
@@ -239,6 +240,7 @@ namespace CryptonRemoteBack.Controllers
             {
                 flightSheet.ExtendedConfig = input.ExtendedConfig;
             }
+            flightSheet.Hashrate = input.Hashrate;
 
             await db.SaveChangesAsync(ct);
             return Ok(flightSheet.Id);
